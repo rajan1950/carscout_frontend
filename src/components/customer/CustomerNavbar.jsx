@@ -4,7 +4,8 @@ export const CustomerNavbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    navigate("/");
+    
+    navigate("/login");
   };
 
   const navStyle = ({ isActive }) =>

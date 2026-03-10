@@ -3,6 +3,7 @@ import { Login } from "../components/Login";
 import { Signup } from "../components/Signup";
 import { CustomerNavbar, CarList, CarDetails, GetApiDemo, UseEffectDemo } from "../components/customer/index.js";
 import { AdminSidebar, AllUsers } from "../components/admin/index.js";
+import Found404 from "../pages/404Found";
 
 const router = createBrowserRouter([
    {path:'/login', element:<Login/>},
@@ -23,7 +24,8 @@ const router = createBrowserRouter([
       children: [
          {path:'allusers', element:<AllUsers></AllUsers>}
       ]
-   }
+   },
+   { path:'*', element: <Found404/> }
 ])
 
 const AppRouter =  () => {
