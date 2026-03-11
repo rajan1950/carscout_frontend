@@ -4,10 +4,14 @@ import { Signup } from "../components/Signup";
 import { CustomerNavbar, CarList, CarDetails, GetApiDemo, UseEffectDemo } from "../components/customer/index.js";
 import { AdminSidebar, AllUsers } from "../components/admin/index.js";
 import Found404 from "../pages/404Found";
+import Home from "../pages/seller/Home.jsx";
+import SellCar from "../pages/seller/SellCar.jsx";
 
 const router = createBrowserRouter([
    {path:'/login', element:<Login/>},
    {path:'/signup', element: <Signup/>},
+   {path:'/', element: <Home/>},
+   {path:'/sellcar', element: <SellCar/>},
    // Customer
    {
       path:'/customer', element:<CustomerNavbar></CustomerNavbar>,

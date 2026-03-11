@@ -16,7 +16,7 @@
     "@mui/material": "^7.3.8",
     "@tailwindcss/vite": "^4.2.0",
     "axios": "^1.13.6",
-    "framer-motion": "^12.35.0",
+    "framer-motion": "^12.35.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.2",
