@@ -100,48 +100,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* WHY CHOOSE US */}
-      {/* <section className="bg-gray-50 py-16">
-
-        <div className="max-w-7xl mx-auto px-6">
-
-          <h2 className="text-3xl font-bold text-center mb-12">
-            Why Choose Car Scout
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-10 text-center">
-
-            <div className="p-6 bg-white shadow rounded-lg">
-              <h3 className="text-xl font-semibold mb-2">
-                Huge Car Collection
-              </h3>
-              <p className="text-gray-500">
-                Explore thousands of cars from trusted sellers.
-              </p>
-            </div>
-
-            <div className="p-6 bg-white shadow rounded-lg">
-              <h3 className="text-xl font-semibold mb-2">
-                Verified Listings
-              </h3>
-              <p className="text-gray-500">
-                Every car is verified by our admin team.
-              </p>
-            </div>
-
-            <div className="p-6 bg-white shadow rounded-lg">
-              <h3 className="text-xl font-semibold mb-2">
-                Easy Test Drive
-              </h3>
-              <p className="text-gray-500">
-                Request a test drive with a single click.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </section> */}
-
       {/* CTA SECTION */}
       <section className="bg-gradient-to-r from-indigo-500 to-cyan-500 text-white py-16 text-center">
 
