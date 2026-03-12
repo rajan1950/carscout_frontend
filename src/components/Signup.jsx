@@ -23,51 +23,24 @@ export const Signup = () => {
 
   const navigate = useNavigate();
 
-  // const password = watch("password");
-
-
-  // const submitHandler = async (data) => {
-  //   console.log("Signup Data:", data);
-
-  //   try {
-  //     const res = await axios.post("http://localhost:4444/user/register", 
-  //       {
-  //         firstName: data.firstName,
-  //         lastName: data.lastName,
-  //         email: data.email,
-  //         password: data.password,
-  //         // userType: data.userType
-  //       }
-  //     );
-
-     
-
-  //     if (res.status === 201) {
-  //       toast.success("Signup successful!");
-  //       navigate("/login");
-
-  //     }
-  //   } catch (error) {
-  //     console.log("signup error...", error);
-  //     toast.error("Server unavailable. Redirecting to login.");
-  //   }finally {
-  //     navigate("/login");
-  //   }
-  // };
-
   const submitHandler = async (data) => {
   try {
     const res = await axios.post(
       "http://localhost:4444/user/register",
       {
-        firstname: data.firstName,
-        lastname: data.lastName,
+        firstname: data.firstname,
+        lastname: data.lastname,
         email: data.email,
         password: data.password
       }
+      
     );
-
-    console.log(res.data);
+    if (res.status === 201) {
+      toast.success("Registration successful! Please login.")
+      reset()
+      navigate("/login")
+    }
+    // console.log(res.data);
   } catch (error) {
     console.log("signup error...", error);
   }
@@ -94,7 +67,7 @@ export const Signup = () => {
             <input
               type="text"
               placeholder="First Name"
-              {...register("firstName", {
+              {...register("firstname", {
                 required: "First name is required",
                 minLength: {
                   value: 3,
@@ -103,8 +76,8 @@ export const Signup = () => {
               })}
               className="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-700"
             />
-            {errors.firstName && (
-              <p className="text-red-400 text-sm">{errors.firstName.message}</p>
+            {errors.firstname && (
+              <p className="text-red-400 text-sm">{errors.firstname.message}</p>
             )}
           </div>
 
@@ -114,7 +87,7 @@ export const Signup = () => {
             <input
               type="text"
               placeholder="Last Name"
-              {...register("lastName", {
+              {...register("lastname", {
                 required: "Last name is required",
                 minLength: {
                   value: 3,
@@ -123,8 +96,8 @@ export const Signup = () => {
               })}
               className="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-700"
             />
-            {errors.lastName && (
-              <p className="text-red-400 text-sm">{errors.lastName.message}</p>
+            {errors.lastname && (
+              <p className="text-red-400 text-sm">{errors.lastname.message}</p>
             )}
           </div>
 

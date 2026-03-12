@@ -22,16 +22,26 @@ export const Login = () => {
 
   const submitHandler = async (data) => {
     try {
-      const res = await axios.get("/user/login",data)
-      console.log("response :", res);
-      console.log("response Data :", res.data);
-      if(res.status === 200){
+      const res = await axios.post("http://localhost:4444/user/login", data)
+      console.log("response...", res);
+      if (res.status === 200) {
         toast.success("Login successful!")
-        navigate('/customer')
+
+        if (res.data.role == "user" || res.data.role == "USER") {
+          navigate("/")
+        }
+        else if (res.data.role == "admin" || res.data.role == "ADMIN") {
+          navigate("/admin")
+        }
+        else {
+          toast.error("Invalid Role")
+          navigate("/login")
+
+        }
       }
     } catch (error) {
-      console.log("error...", error);
-      toast.error("Login failed. Please check your credentials and try again.")
+      console.log("login error...", error);
+      toast.error("Invalid credentials. Please try again.")
     }
   }
 
@@ -69,8 +79,8 @@ export const Login = () => {
                     }
                   })}
                   className={`w-full px-4 py-3 rounded-lg bg-slate-700 border transition-all focus:outline-none text-white placeholder-slate-500 ${errors.email
-                      ? 'border-red-500 focus:border-red-500 focus:bg-slate-700'
-                      : 'border-slate-600 focus:border-blue-500 focus:bg-slate-700'
+                    ? 'border-red-500 focus:border-red-500 focus:bg-slate-700'
+                    : 'border-slate-600 focus:border-blue-500 focus:bg-slate-700'
                     }`}
                 />
               </div>
@@ -99,8 +109,8 @@ export const Login = () => {
                     }
                   })}
                   className={`w-full px-4 py-3 rounded-lg bg-slate-700 border transition-all focus:outline-none text-white placeholder-slate-500 ${errors.password
-                      ? 'border-red-500 focus:border-red-500 focus:bg-slate-700'
-                      : 'border-slate-600 focus:border-blue-500 focus:bg-slate-700'
+                    ? 'border-red-500 focus:border-red-500 focus:bg-slate-700'
+                    : 'border-slate-600 focus:border-blue-500 focus:bg-slate-700'
                     }`}
                 />
                 <button
