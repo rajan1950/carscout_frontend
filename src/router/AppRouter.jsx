@@ -1,11 +1,35 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+// ==============================
+// AUTH COMPONENTS
+// ==============================
 import { Login } from "../components/Login";
 import { Signup } from "../components/Signup";
+
+// ==============================
+// CUSTOMER COMPONENTS
+// ==============================
 import { CustomerNavbar, CarList, CarDetails, GetApiDemo, UseEffectDemo } from "../components/customer/index.js";
-import { AdminSidebar, AllUsers } from "../components/admin/index.js";
-import Found404 from "../pages/404Found";
+
+// ==============================
+// ADMIN COMPONENTS
+// ==============================
+import { AdminSidebar } from "../components/admin/AdminSidebar";
+
+// ==============================
+// SELLER PAGES
+// ==============================
 import Home from "../pages/seller/Home.jsx";
 import SellCar from "../pages/seller/SellCar.jsx";
+
+// ==============================
+// ERROR PAGE
+// ==============================
+import Found404 from "../pages/404Found";
+
+// ======================================================
+// ROUTER CONFIGURATION
+// ======================================================
 
 const router = createBrowserRouter([
    {path:'/login', element:<Login/>},
@@ -23,12 +47,7 @@ const router = createBrowserRouter([
       ]
    },
    // Admin
-   {
-      path:'/admin', element:<AdminSidebar></AdminSidebar>,
-      children: [
-         {path:'allusers', element:<AllUsers></AllUsers>}
-      ]
-   },
+   { path:'/adminpanel', element:<AdminSidebar /> },
    { path:'*', element: <Found404/> }
 ])
 

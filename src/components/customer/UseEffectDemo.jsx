@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 
 export const UseEffectDemo = () => {
-    const [count, setcount] = useState(0)
+  const [seconds, setSeconds] = useState(0);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSeconds((prev) => prev + 1);
+    }, 1000);
 
-    useEffect(()=>{
-        console.log("use effect called...")
-    },[count]) 
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <div style={{textAlign:"center"}}>
-        <h1>UseEffectDemo</h1>
-        <button onClick={()=>{setcount(count+1)}}>Increment</button>
-        <p>Count: {count}</p>
+    <div className="bg-white rounded-lg shadow-sm border p-5">
+      <h2 className="text-2xl font-semibold mb-3">useEffect Demo</h2>
+      <p className="text-gray-700">Component mounted for {seconds} seconds.</p>
     </div>
-  )
-}
+  );
+};
