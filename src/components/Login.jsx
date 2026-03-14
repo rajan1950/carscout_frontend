@@ -35,7 +35,7 @@ const submitHandler = async (data) => {
       const role = res.data.role || res.data.user?.role
 
       if (role === "admin" || role === "ADMIN") {
-        navigate("/admin")
+        navigate("/adminpanel")
       }
       else if (role === "seller" || role === "SELLER") {
         navigate("/seller")
