@@ -15,6 +15,10 @@ import { CustomerNavbar, CarList, CarDetails, GetApiDemo, UseEffectDemo } from "
 // ADMIN COMPONENTS
 // ==============================
 import { AdminSidebar } from "../components/admin/AdminSidebar";
+import { AdminDashboard } from "../components/admin/AdminDashboard";
+import { AdminUsers } from "../components/admin/AdminUsers";
+import { AdminCars } from "../components/admin/AdminCars";
+import { AdminInquiries } from "../components/admin/AdminInquiries";
 
 // ==============================
 // SELLER PAGES
@@ -47,7 +51,16 @@ const router = createBrowserRouter([
       ]
    },
    // Admin
-   { path:'/adminpanel', element:<AdminSidebar /> },
+   {
+      path:'/adminpanel', element:<AdminSidebar />,
+      children: [
+         { index: true, element:<AdminDashboard /> },
+         { path:'dashboard', element:<AdminDashboard /> },
+         { path:'users', element:<AdminUsers /> },
+         { path:'cars', element:<AdminCars /> },
+         { path:'inquiries', element:<AdminInquiries /> },
+      ]
+   },
    { path:'*', element: <Found404/> }
 ])
 
