@@ -1,10 +1,25 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LogoutIcon from '@mui/icons-material/Logout';
+import { ADMIN_SETTINGS_EVENT, readAdminSettings } from "./adminPanelSettings";
 
 export const AdminSidebar = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const applySettings = () => {
+      const settings = readAdminSettings();
+      setCollapsed(Boolean(settings.compactSidebar));
+    };
+
+    applySettings();
+    window.addEventListener(ADMIN_SETTINGS_EVENT, applySettings);
+
+    return () => {
+      window.removeEventListener(ADMIN_SETTINGS_EVENT, applySettings);
+    };
+  }, []);
 
   const handleLogout = () => {
     navigate("/");
@@ -70,6 +85,38 @@ export const AdminSidebar = () => {
             }
           >
             Inquiries
+          </NavLink>
+          <NavLink
+            to="messages"
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded ${navStyle({ isActive })}`
+            }
+          >
+            Messages
+          </NavLink>
+          <NavLink
+            to="reviews"
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded ${navStyle({ isActive })}`
+            }
+          >
+            Reviews
+          </NavLink>
+          <NavLink
+            to="testdrives"
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded ${navStyle({ isActive })}`
+            }
+          >
+            Test Drives
+          </NavLink>
+          <NavLink
+            to="settings"
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded ${navStyle({ isActive })}`
+            }
+          >
+            Settings
           </NavLink>
         </nav>
 
