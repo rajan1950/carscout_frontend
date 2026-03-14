@@ -1,7 +1,13 @@
 import { AdminSidebar } from "./AdminSidebar"
-import { AllUsers } from "./AllUsers"
+import { AdminDashboard } from "./AdminDashboard"
+import { AdminUsers } from "./AdminUsers"
+import { AdminCars } from "./AdminCars"
+import { AdminInquiries } from "./AdminInquiries"
 
 export { 
          AdminSidebar, 
-         AllUsers,
+         AdminDashboard,
+         AdminUsers,
+         AdminCars,
+         AdminInquiries,
       }
