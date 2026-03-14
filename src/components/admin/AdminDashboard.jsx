@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const ADMIN_BASE_URL = "http://localhost:4444/admin";
 
@@ -48,6 +49,30 @@ export const AdminDashboard = () => {
         <div className="bg-white rounded-xl shadow p-5 border border-gray-100">
           <p className="text-sm text-gray-500">Total Inquiries</p>
           <p className="text-3xl font-bold text-purple-700 mt-2">{stats.inquiries}</p>
+        </div>
+      </div>
+
+      <div className="mt-8 bg-white rounded-xl shadow border border-gray-100 p-5">
+        <h3 className="text-lg font-semibold mb-4">Direct Management</h3>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            to="/adminpanel/users"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          >
+            Manage Users (Create/Edit/Delete)
+          </Link>
+          <Link
+            to="/adminpanel/cars"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          >
+            Manage Cars (Create/Edit/Delete)
+          </Link>
+          <Link
+            to="/adminpanel/inquiries"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
+          >
+            Manage Inquiries (Create/Edit/Delete)
+          </Link>
         </div>
       </div>
     </div>
