@@ -40,12 +40,36 @@ export const AdminSidebar = () => {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
           <NavLink
-            to="allusers"
+            to="dashboard"
             className={({ isActive }) =>
               `block px-4 py-2 rounded ${navStyle({ isActive })}`
             }
           >
-            👥 {collapsed ? "" : "All Users"}
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="users"
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded ${navStyle({ isActive })}`
+            }
+          >
+            Users
+          </NavLink>
+          <NavLink
+            to="cars"
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded ${navStyle({ isActive })}`
+            }
+          >
+            Cars
+          </NavLink>
+          <NavLink
+            to="inquiries"
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded ${navStyle({ isActive })}`
+            }
+          >
+            Inquiries
           </NavLink>
         </nav>
 
