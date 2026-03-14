@@ -20,30 +20,43 @@ export const Login = () => {
     mode: 'onBlur'
   })
 
-  const submitHandler = async (data) => {
-    try {
-      const res = await axios.post("http://localhost:4444/user/login", data)
-      console.log("response...", res);
-      if (res.status === 200) {
-        toast.success("Login successful!")
+const submitHandler = async (data) => {
+  try {
 
-        if (res.data.role == "user" || res.data.role == "USER") {
-          navigate("/")
-        }
-        else if (res.data.role == "admin" || res.data.role == "ADMIN") {
-          navigate("/admin")
-        }
-        else {
-          toast.error("Invalid Role")
-          navigate("/login")
+    const res = await axios.post("http://localhost:4444/user/login", data)
 
-        }
+    console.log("response...", res.data)
+
+    if (res.status === 200) {
+
+      toast.success("Login successful!")
+
+      // get role from backend
+      const role = res.data.role || res.data.user?.role
+
+      if (role === "admin" || role === "ADMIN") {
+        navigate("/admin")
       }
-    } catch (error) {
-      console.log("login error...", error);
-      toast.error("Invalid credentials. Please try again.")
+      else if (role === "seller" || role === "SELLER") {
+        navigate("/seller")
+      }
+      else if (role === "buyer" || role === "BUYER" || role === "user") {
+        navigate("/")
+      }
+      else {
+        toast.error("Invalid Role")
+        navigate("/login")
+      }
+
     }
+
+  } catch (error) {
+
+    console.log("login error...", error)
+    toast.error("Invalid credentials. Please try again.")
+
   }
+}
 
   return (
     <div className="min-h-screen from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-8">

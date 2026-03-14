@@ -24,27 +24,29 @@ export const Signup = () => {
   const navigate = useNavigate();
 
   const submitHandler = async (data) => {
-  try {
-    const res = await axios.post(
-      "http://localhost:4444/user/register",
-      {
-        firstname: data.firstname,
-        lastname: data.lastname,
-        email: data.email,
-        password: data.password
+    try {
+      const res = await axios.post(
+        "http://localhost:4444/user/register",
+        {
+          firstname: data.firstname,
+          lastname: data.lastname,
+          email: data.email,
+          password: data.password,
+          userType: data.userType,
+          role: data.userType
+        }
+
+      );
+      if (res.status === 201) {
+        toast.success("Registration successful! Please login.")
+        reset()
+        navigate("/login")
       }
-      
-    );
-    if (res.status === 201) {
-      toast.success("Registration successful! Please login.")
-      reset()
-      navigate("/login")
+      // console.log(res.data);
+    } catch (error) {
+      console.log("signup error...", error);
     }
-    // console.log(res.data);
-  } catch (error) {
-    console.log("signup error...", error);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-200 to-purple-200">
@@ -117,17 +119,26 @@ export const Signup = () => {
             )}
           </div>
 
+          
           {/* Account Type */}
-          {/* <div>
+          <div>
             <label className="text-sm">Account Type</label>
+
             <select
-              {...register("userType")}
+              {...register("role", {
+                required: "Please select account type"
+              })}
               className="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-700"
             >
-              <option value="customer">Customer - Buy Cars</option>
-              <option value="dealer">Dealer - Sell Cars</option>
+              <option value="">Select Account</option>
+              <option value="buyer">Car Buyer - Buy Cars</option>
+              <option value="seller">Car Seller - Sell Cars</option>
             </select>
-          </div> */}
+
+            {errors.role && (
+              <p className="text-red-400 text-sm">{errors.role.message}</p>
+            )}
+          </div>
 
           {/* Password */}
           <div>
