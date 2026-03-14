@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaCar, FaImage } from "react-icons/fa";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const SellCar = () => {
   const [form, setForm] = useState({
@@ -16,6 +17,7 @@ const SellCar = () => {
   });
 
   const [preview, setPreview] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -31,12 +33,38 @@ const SellCar = () => {
 
   const submitForm = async (e) => {
     e.preventDefault();
+    if (submitting) {
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
-      await axios.post("http://localhost:4444/api/cars", form);
-      alert("Car submitted successfully");
+      const payload = {
+        ...form,
+        year: form.year ? Number(form.year) : undefined,
+        price: form.price ? Number(form.price) : undefined,
+        mileage: form.mileage ? Number(form.mileage) : undefined,
+      };
+
+      await axios.post("http://localhost:4444/car/add", payload);
+      toast.success("Car submitted successfully");
+
+      setForm({
+        brand: "",
+        model: "",
+        year: "",
+        price: "",
+        mileage: "",
+        fuelType: "",
+        transmission: "",
+        description: "",
+      });
+      setPreview(null);
     } catch (err) {
-      console.log(err);
+      toast.error(err.response?.data?.message || "Failed to submit car");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -67,7 +95,9 @@ const SellCar = () => {
             type="text"
             name="brand"
             placeholder="Car Brand"
+            value={form.brand}
             onChange={handleChange}
+            required
             className="border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400"
           />
 
@@ -76,7 +106,9 @@ const SellCar = () => {
             type="text"
             name="model"
             placeholder="Model"
+            value={form.model}
             onChange={handleChange}
+            required
             className="border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400"
           />
 
@@ -85,6 +117,7 @@ const SellCar = () => {
             type="number"
             name="year"
             placeholder="Manufacturing Year"
+            value={form.year}
             onChange={handleChange}
             className="border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400"
           />
@@ -94,6 +127,7 @@ const SellCar = () => {
             type="number"
             name="price"
             placeholder="Price ₹"
+            value={form.price}
             onChange={handleChange}
             className="border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400"
           />
@@ -103,6 +137,7 @@ const SellCar = () => {
             type="number"
             name="mileage"
             placeholder="Mileage (KM)"
+            value={form.mileage}
             onChange={handleChange}
             className="border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400"
           />
@@ -110,6 +145,7 @@ const SellCar = () => {
           {/* Fuel */}
           <select
             name="fuelType"
+            value={form.fuelType}
             onChange={handleChange}
             className="border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400"
           >
@@ -122,6 +158,7 @@ const SellCar = () => {
           {/* Transmission */}
           <select
             name="transmission"
+            value={form.transmission}
             onChange={handleChange}
             className="border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400"
           >
@@ -155,6 +192,7 @@ const SellCar = () => {
           <textarea
             name="description"
             placeholder="Car Description"
+            value={form.description}
             onChange={handleChange}
             className="border rounded-lg p-3 md:col-span-2"
           />
@@ -164,9 +202,10 @@ const SellCar = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             type="submit"
+            disabled={submitting}
             className="md:col-span-2 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white py-3 rounded-lg font-semibold shadow-lg"
           >
-            sell Your Car
+            {submitting ? "Submitting..." : "Sell Your Car"}
           </motion.button>
         </form>
       </motion.div>
