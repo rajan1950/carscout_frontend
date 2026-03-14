@@ -45,7 +45,7 @@ export const AdminSidebar = () => {
               `block px-4 py-2 rounded ${navStyle({ isActive })}`
             }
           >
-            Dashboard
+            Dashboard 
           </NavLink>
           <NavLink
             to="users"
