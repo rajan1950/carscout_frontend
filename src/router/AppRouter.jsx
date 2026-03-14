@@ -19,6 +19,11 @@ import { AdminDashboard } from "../components/admin/AdminDashboard";
 import { AdminUsers } from "../components/admin/AdminUsers";
 import { AdminCars } from "../components/admin/AdminCars";
 import { AdminInquiries } from "../components/admin/AdminInquiries";
+import { AdminMessages } from "../components/admin/AdminMessages";
+import { AdminReviews } from "../components/admin/AdminReviews";
+import { AdminTestDrives } from "../components/admin/AdminTestDrives";
+import { AdminSettings } from "../components/admin/AdminSettings";
+import { AdminDefaultRoute } from "../components/admin/AdminDefaultRoute";
 
 // ==============================
 // SELLER PAGES
@@ -54,11 +59,15 @@ const router = createBrowserRouter([
    {
       path:'/adminpanel', element:<AdminSidebar />,
       children: [
-         { index: true, element:<AdminDashboard /> },
+         { index: true, element:<AdminDefaultRoute /> },
          { path:'dashboard', element:<AdminDashboard /> },
          { path:'users', element:<AdminUsers /> },
          { path:'cars', element:<AdminCars /> },
          { path:'inquiries', element:<AdminInquiries /> },
+         { path:'messages', element:<AdminMessages /> },
+         { path:'reviews', element:<AdminReviews /> },
+         { path:'testdrives', element:<AdminTestDrives /> },
+         { path:'settings', element:<AdminSettings /> },
       ]
    },
    { path:'*', element: <Found404/> }
