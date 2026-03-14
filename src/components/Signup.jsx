@@ -32,8 +32,7 @@ export const Signup = () => {
           lastname: data.lastname,
           email: data.email,
           password: data.password,
-          userType: data.userType,
-          role: data.userType
+          role: data.role
         }
 
       );
