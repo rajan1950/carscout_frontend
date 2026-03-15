@@ -32,13 +32,37 @@ const submitHandler = async (data) => {
 
       toast.success("Login successful!")
 
-      // get role from backend
-      const role = normalizeRole(res.data.role || res.data.user?.role)
+      const rawUser =
+        res.data.user ||
+        res.data.profile ||
+        res.data.data?.user ||
+        res.data.data ||
+        {}
+
+      const role = normalizeRole(res.data.role || rawUser.role)
+      const fallbackName = String(data.email || "").split("@")[0] || "User"
+
+      const safeUser = {
+        ...rawUser,
+        name:
+          rawUser.name ||
+          rawUser.fullName ||
+          rawUser.username ||
+          rawUser.firstName ||
+          fallbackName,
+        email: rawUser.email || data.email,
+        profileImage:
+          rawUser.profileImage ||
+          rawUser.profilePicture ||
+          rawUser.avatar ||
+          rawUser.photo ||
+          "",
+      }
 
       saveAuthSession({
         role,
-        token: res.data.token || res.data.accessToken,
-        user: res.data.user,
+        token: res.data.token || res.data.accessToken || res.data.jwt,
+        user: safeUser,
       })
 
       if (role === "admin") {
