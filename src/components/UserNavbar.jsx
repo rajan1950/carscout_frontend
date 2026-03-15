@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { readAuthSession } from "../utils/auth";
 
 const navItems = [
   { label: "Browse Cars", href: "#featured-cars", type: "anchor" },
@@ -11,6 +12,10 @@ const navItems = [
 
 const UserNavbar = () => {
   const [open, setOpen] = useState(false);
+  const role = String(readAuthSession()?.role || "").toLowerCase();
+  const visibleItems = navItems.filter(
+    (item) => item.label !== "Admin" || role === "admin"
+  );
   const navButtonClass =
     "inline-flex items-center justify-center rounded-full border border-cyan-300 px-4 py-2 text-base font-semibold text-slate-700 transition hover:border-cyan-600 hover:text-cyan-700 hover:bg-cyan-50";
 
@@ -23,7 +28,7 @@ const UserNavbar = () => {
 
         <div className="ml-auto flex items-center gap-2">
           <nav className="hidden md:flex items-center gap-3">
-            {navItems.map((item) =>
+            {visibleItems.map((item) =>
               item.type === "anchor" ? (
                 <a key={item.label} href={item.href} className={navButtonClass}>
                   {item.label}
@@ -49,7 +54,7 @@ const UserNavbar = () => {
       {open && (
         <div className="md:hidden border-t border-cyan-100 bg-white/95 px-6 py-3">
           <nav className="flex flex-col gap-3">
-            {navItems.map((item) =>
+            {visibleItems.map((item) =>
               item.type === "anchor" ? (
                 <a
                   key={item.label}
