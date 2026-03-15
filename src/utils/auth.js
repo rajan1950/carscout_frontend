@@ -36,6 +36,11 @@ export const clearAuthSession = () => {
   localStorage.removeItem(AUTH_STORAGE_KEY);
 };
 
+export const isAuthenticated = () => {
+  const session = readAuthSession();
+  return Boolean(session?.role);
+};
+
 export const isAdminAuthenticated = () => {
   const session = readAuthSession();
   return normalizeRole(session?.role) === "admin";
