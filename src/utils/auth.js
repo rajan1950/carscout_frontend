@@ -1,4 +1,5 @@
 const AUTH_STORAGE_KEY = "carscout_auth";
+export const AUTH_SESSION_EVENT = "carscout-auth-session-updated";
 
 export const normalizeRole = (role) => String(role || "").trim().toLowerCase();
 
@@ -16,6 +17,8 @@ export const saveAuthSession = (payload) => {
   };
 
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+  window.dispatchEvent(new Event(AUTH_SESSION_EVENT));
+  return session;
 };
 
 export const readAuthSession = () => {
@@ -34,6 +37,38 @@ export const readAuthSession = () => {
 
 export const clearAuthSession = () => {
   localStorage.removeItem(AUTH_STORAGE_KEY);
+  window.dispatchEvent(new Event(AUTH_SESSION_EVENT));
+};
+
+export const getAuthProfile = () => {
+  const session = readAuthSession();
+  const user = session?.user || {};
+
+  const role = normalizeRole(session?.role);
+  const name =
+    user?.name ||
+    user?.fullName ||
+    user?.username ||
+    user?.firstName ||
+    user?.email ||
+    "Profile";
+
+  const email = user?.email || "";
+  const image =
+    user?.profileImage ||
+    user?.profilePicture ||
+    user?.avatar ||
+    user?.photo ||
+    "";
+
+  return {
+    role,
+    name,
+    email,
+    image,
+    isLoggedIn: Boolean(role),
+    isAdmin: role === "admin",
+  };
 };
 
 export const isAuthenticated = () => {
