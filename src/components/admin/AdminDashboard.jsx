@@ -2,6 +2,17 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { ADMIN_SETTINGS_EVENT, readAdminSettings } from "./adminPanelSettings";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 const ADMIN_BASE_URL = "http://localhost:4444/admin";
 const MESSAGE_BASE_URL = "http://localhost:4444/message";
@@ -64,15 +75,15 @@ export const AdminDashboard = () => {
   }, []);
 
   const chartData = [
-    { label: "Users", value: stats.users, color: "bg-blue-600" },
-    { label: "Cars", value: stats.cars, color: "bg-green-600" },
-    { label: "Inquiries", value: stats.inquiries, color: "bg-purple-600" },
-    { label: "Messages", value: stats.messages, color: "bg-indigo-600" },
-    { label: "Reviews", value: stats.reviews, color: "bg-amber-500" },
-    { label: "Test Drives", value: stats.testDrives, color: "bg-rose-600" },
+    { label: "Users", value: stats.users, color: "#2563eb" },
+    { label: "Cars", value: stats.cars, color: "#16a34a" },
+    { label: "Inquiries", value: stats.inquiries, color: "#9333ea" },
+    { label: "Messages", value: stats.messages, color: "#4f46e5" },
+    { label: "Reviews", value: stats.reviews, color: "#d97706" },
+    { label: "Test Drives", value: stats.testDrives, color: "#e11d48" },
   ];
 
-  const maxValue = Math.max(...chartData.map((item) => item.value), 1);
+  const pieData = chartData.filter((item) => item.value > 0);
 
   if (loading) {
     return <p className="text-gray-600">Loading dashboard...</p>;
@@ -118,23 +129,53 @@ export const AdminDashboard = () => {
       </div>
 
       {showCharts && (
-        <div className="mt-8 bg-white rounded-xl shadow border border-gray-100 p-5">
-          <h3 className="text-lg font-semibold mb-4">System Overview Chart</h3>
-          <div className="space-y-3">
-            {chartData.map((item) => (
-              <div key={item.label}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium text-gray-700">{item.label}</span>
-                  <span className="text-gray-600">{item.value}</span>
+        <div className="mt-8 grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
+            <h3 className="text-lg font-semibold mb-4">Activity Comparison (Bar)</h3>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} angle={-20} textAnchor="end" height={60} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                    {chartData.map((entry) => (
+                      <Cell key={entry.label} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
+            <h3 className="text-lg font-semibold mb-4">Distribution (Pie)</h3>
+            <div className="h-72">
+              {pieData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="label"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={95}
+                      label
+                    >
+                      {pieData.map((entry) => (
+                        <Cell key={entry.label} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+                  No data available yet for distribution chart.
                 </div>
-                <div className="h-3 rounded-full bg-gray-100 overflow-hidden">
-                  <div
-                    className={`h-full ${item.color}`}
-                    style={{ width: `${(item.value / maxValue) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         </div>
       )}
