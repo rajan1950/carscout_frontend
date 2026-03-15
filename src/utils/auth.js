@@ -47,7 +47,9 @@ export const getAuthProfile = () => {
   const role = normalizeRole(session?.role);
   const name =
     user?.name ||
+    user?.displayName ||
     user?.fullName ||
+    user?.userName ||
     user?.username ||
     user?.firstName ||
     user?.email ||
@@ -57,6 +59,7 @@ export const getAuthProfile = () => {
   const image =
     user?.profileImage ||
     user?.profilePicture ||
+    user?.image ||
     user?.avatar ||
     user?.photo ||
     "";
