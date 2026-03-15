@@ -98,6 +98,20 @@ export const AdminDashboard = () => {
   const busiest = [...chartData].sort((a, b) => b.value - a.value)[0];
   const busiestRoute = `/adminpanel/${moduleRouteMap[busiest?.label] || "dashboard"}`;
 
+  const priorityQueue = [...chartData]
+    .sort((a, b) => b.value - a.value)
+    .map((item, index) => ({
+      ...item,
+      route: `/adminpanel/${moduleRouteMap[item.label] || "dashboard"}`,
+      priority: index === 0 ? "High" : index < 3 ? "Medium" : "Low",
+    }));
+
+  const priorityStyles = {
+    High: "bg-red-100 text-red-700 border-red-200",
+    Medium: "bg-amber-100 text-amber-700 border-amber-200",
+    Low: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  };
+
   if (loading) {
     return <p className="text-gray-600">Loading dashboard...</p>;
   }
@@ -140,58 +154,6 @@ export const AdminDashboard = () => {
           <p className="text-3xl font-bold text-rose-700 mt-2">{stats.testDrives}</p>
         </div>
       </div>
-
-      {showCharts && (
-        <div className="mt-8 grid grid-cols-1 xl:grid-cols-2 gap-5">
-          <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
-            <h3 className="text-lg font-semibold mb-4">Activity Comparison (Bar)</h3>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} angle={-20} textAnchor="end" height={60} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                    {chartData.map((entry) => (
-                      <Cell key={entry.label} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
-            <h3 className="text-lg font-semibold mb-4">Distribution (Pie)</h3>
-            <div className="h-72">
-              {pieData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      dataKey="value"
-                      nameKey="label"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={95}
-                      label
-                    >
-                      {pieData.map((entry) => (
-                        <Cell key={entry.label} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-500 text-sm">
-                  No data available yet for distribution chart.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="mt-8 bg-white rounded-xl shadow border border-gray-100 p-5">
         <h3 className="text-lg font-semibold mb-4">Direct Management</h3>
@@ -263,6 +225,85 @@ export const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      <div className="mt-8 bg-white rounded-xl shadow border border-gray-100 p-5">
+        <h3 className="text-lg font-semibold mb-4">Priority Queue (New Functionality)</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Modules are auto-ranked by activity volume so admins can handle high-impact areas first.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {priorityQueue.map((item) => (
+            <Link
+              key={item.label}
+              to={item.route}
+              className="rounded-lg border border-gray-200 p-4 hover:border-gray-300 hover:shadow-sm transition"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-semibold text-gray-800">{item.label}</p>
+                <span className={`text-xs font-semibold px-2 py-1 rounded-full border ${priorityStyles[item.priority]}`}>
+                  {item.priority}
+                </span>
+              </div>
+              <p className="mt-2 text-2xl font-bold" style={{ color: item.color }}>
+                {item.value}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">Open module</p>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {showCharts && (
+        <div className="mt-8 grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
+            <h3 className="text-lg font-semibold mb-4">Activity Comparison (Bar)</h3>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} angle={-20} textAnchor="end" height={60} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                    {chartData.map((entry) => (
+                      <Cell key={entry.label} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
+            <h3 className="text-lg font-semibold mb-4">Distribution (Pie)</h3>
+            <div className="h-72">
+              {pieData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="label"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={95}
+                      label
+                    >
+                      {pieData.map((entry) => (
+                        <Cell key={entry.label} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+                  No data available yet for distribution chart.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
