@@ -32,33 +32,34 @@ export const AdminDashboard = () => {
   const [error, setError] = useState("");
   const [showCharts, setShowCharts] = useState(true);
 
+  const fetchDashboard = async () => {
+    setError("");
+    try {
+      const [summaryRes, messageRes, reviewRes, testDriveRes] = await Promise.all([
+        axios.get(`${ADMIN_BASE_URL}/dashboard`),
+        axios.get(`${MESSAGE_BASE_URL}/all`),
+        axios.get(`${REVIEW_BASE_URL}/all`),
+        axios.get(`${TESTDRIVE_BASE_URL}/all`),
+      ]);
+
+      const summary = summaryRes.data || { users: 0, cars: 0, inquiries: 0 };
+
+      setStats({
+        users: summary.users || 0,
+        cars: summary.cars || 0,
+        inquiries: summary.inquiries || 0,
+        messages: Array.isArray(messageRes.data) ? messageRes.data.length : 0,
+        reviews: Array.isArray(reviewRes.data) ? reviewRes.data.length : 0,
+        testDrives: Array.isArray(testDriveRes.data) ? testDriveRes.data.length : 0,
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load dashboard stats");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const [summaryRes, messageRes, reviewRes, testDriveRes] = await Promise.all([
-          axios.get(`${ADMIN_BASE_URL}/dashboard`),
-          axios.get(`${MESSAGE_BASE_URL}/all`),
-          axios.get(`${REVIEW_BASE_URL}/all`),
-          axios.get(`${TESTDRIVE_BASE_URL}/all`),
-        ]);
-
-        const summary = summaryRes.data || { users: 0, cars: 0, inquiries: 0 };
-
-        setStats({
-          users: summary.users || 0,
-          cars: summary.cars || 0,
-          inquiries: summary.inquiries || 0,
-          messages: Array.isArray(messageRes.data) ? messageRes.data.length : 0,
-          reviews: Array.isArray(reviewRes.data) ? reviewRes.data.length : 0,
-          testDrives: Array.isArray(testDriveRes.data) ? testDriveRes.data.length : 0,
-        });
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to load dashboard stats");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     const applySettings = () => {
       const settings = readAdminSettings();
       setShowCharts(Boolean(settings.showDashboardCharts));
@@ -84,6 +85,18 @@ export const AdminDashboard = () => {
   ];
 
   const pieData = chartData.filter((item) => item.value > 0);
+
+  const moduleRouteMap = {
+    Users: "users",
+    Cars: "cars",
+    Inquiries: "inquiries",
+    Messages: "messages",
+    Reviews: "reviews",
+    "Test Drives": "testdrives",
+  };
+
+  const busiest = [...chartData].sort((a, b) => b.value - a.value)[0];
+  const busiestRoute = `/adminpanel/${moduleRouteMap[busiest?.label] || "dashboard"}`;
 
   if (loading) {
     return <p className="text-gray-600">Loading dashboard...</p>;
@@ -182,49 +195,72 @@ export const AdminDashboard = () => {
 
       <div className="mt-8 bg-white rounded-xl shadow border border-gray-100 p-5">
         <h3 className="text-lg font-semibold mb-4">Direct Management</h3>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            to="/adminpanel/users"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-          >
-            Manage Users (Create/Edit/Delete)
-          </Link>
-          <Link
-            to="/adminpanel/cars"
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-          >
-            Manage Cars (Create/Edit/Delete)
-          </Link>
-          <Link
-            to="/adminpanel/inquiries"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
-          >
-            Manage Inquiries (Create/Edit/Delete)
-          </Link>
-          <Link
-            to="/adminpanel/messages"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
-          >
-            Manage Messages
-          </Link>
-          <Link
-            to="/adminpanel/reviews"
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded"
-          >
-            Manage Reviews (Create/Edit/Delete)
-          </Link>
-          <Link
-            to="/adminpanel/testdrives"
-            className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded"
-          >
-            Manage Test Drives (Create/Edit/Delete)
-          </Link>
-          <Link
-            to="/adminpanel/settings"
-            className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded"
-          >
-            Admin Settings
-          </Link>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+            <p className="text-sm font-semibold text-blue-800 mb-3">Core Management</p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                to="/adminpanel/users"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Users
+              </Link>
+              <Link
+                to="/adminpanel/cars"
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Cars
+              </Link>
+              <Link
+                to="/adminpanel/testdrives"
+                className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Test Drives
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+            <p className="text-sm font-semibold text-indigo-800 mb-3">Communication</p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                to="/adminpanel/inquiries"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Inquiries
+              </Link>
+              <Link
+                to="/adminpanel/messages"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Messages
+              </Link>
+              <Link
+                to="/adminpanel/reviews"
+                className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded text-sm"
+              >
+                Reviews
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-cyan-100 bg-cyan-50 p-4">
+            <p className="text-sm font-semibold text-cyan-800 mb-3">Smart Actions (New)</p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                to={busiestRoute}
+                className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Open Busiest: {busiest?.label || "Dashboard"}
+              </Link>
+              <Link
+                to="/adminpanel/settings"
+                className="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded text-sm"
+              >
+                Admin Settings
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
