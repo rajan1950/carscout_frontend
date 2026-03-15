@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import axios from 'axios'
+import { normalizeRole, saveAuthSession } from '../utils/auth'
 
 export const Login = () => {
   const navigate = useNavigate()
@@ -32,15 +33,18 @@ const submitHandler = async (data) => {
       toast.success("Login successful!")
 
       // get role from backend
-      const role = res.data.role || res.data.user?.role
+      const role = normalizeRole(res.data.role || res.data.user?.role)
 
-      if (role === "admin" || role === "ADMIN") {
+      saveAuthSession({
+        role,
+        token: res.data.token || res.data.accessToken,
+        user: res.data.user,
+      })
+
+      if (role === "admin") {
         navigate("/adminpanel")
       }
-      else if (role === "seller" || role === "SELLER") {
-        navigate("/seller")
-      }
-      else if (role === "buyer" || role === "BUYER" || role === "user") {
+      else if (role === "seller" || role === "buyer" || role === "user") {
         navigate("/")
       }
       else {
