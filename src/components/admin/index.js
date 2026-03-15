@@ -8,6 +8,7 @@ import { AdminReviews } from "./AdminReviews"
 import { AdminTestDrives } from "./AdminTestDrives"
 import { AdminSettings } from "./AdminSettings"
 import { AdminDefaultRoute } from "./AdminDefaultRoute"
+import { AdminRouteGuard } from "./AdminRouteGuard"
 
 export { 
          AdminSidebar, 
@@ -20,4 +21,5 @@ export {
          AdminTestDrives,
          AdminSettings,
          AdminDefaultRoute,
+         AdminRouteGuard,
       }

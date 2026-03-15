@@ -10,6 +10,7 @@ import ReviewsIcon from '@mui/icons-material/Reviews';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { ADMIN_SETTINGS_EVENT, readAdminSettings } from "./adminPanelSettings";
+import { clearAuthSession } from "../../utils/auth";
 
 export const AdminSidebar = () => {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ export const AdminSidebar = () => {
   }, []);
 
   const handleLogout = () => {
+    clearAuthSession();
     navigate("/");
   };
 

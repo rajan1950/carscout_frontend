@@ -24,6 +24,7 @@ import { AdminReviews } from "../components/admin/AdminReviews";
 import { AdminTestDrives } from "../components/admin/AdminTestDrives";
 import { AdminSettings } from "../components/admin/AdminSettings";
 import { AdminDefaultRoute } from "../components/admin/AdminDefaultRoute";
+import { AdminRouteGuard } from "../components/admin/AdminRouteGuard";
 
 // ==============================
 // SELLER PAGES
@@ -57,7 +58,11 @@ const router = createBrowserRouter([
    },
    // Admin
    {
-      path:'/adminpanel', element:<AdminSidebar />,
+      path:'/adminpanel', element:(
+         <AdminRouteGuard>
+            <AdminSidebar />
+         </AdminRouteGuard>
+      ),
       children: [
          { index: true, element:<AdminDefaultRoute /> },
          { path:'dashboard', element:<AdminDashboard /> },

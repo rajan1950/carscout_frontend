@@ -14,8 +14,10 @@ import {
 import { Link } from "react-router-dom";
 import axios from "axios";
 import UserNavbar from "../../components/UserNavbar";
+import { isAdminAuthenticated } from "../../utils/auth";
 
 const Home = () => {
+  const canOpenAdminPanel = isAdminAuthenticated();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -213,12 +215,14 @@ const Home = () => {
               <span className="bg-cyan-100 text-cyan-900 px-4 py-2 rounded-full text-sm font-medium">
                 {visibleCars.length} cars found
               </span>
-              <Link
-                to="/adminpanel/dashboard"
-                className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-semibold"
-              >
-                Open Admin Dashboard
-              </Link>
+              {canOpenAdminPanel && (
+                <Link
+                  to="/adminpanel/dashboard"
+                  className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                >
+                  Open Admin Dashboard
+                </Link>
+              )}
             </div>
           </motion.div>
         </div>
