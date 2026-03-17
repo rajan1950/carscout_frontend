@@ -30,28 +30,65 @@ export const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [showCharts, setShowCharts] = useState(true);
 
   const fetchDashboard = async () => {
+    setLoading(true);
     setError("");
+    setNotice("");
+
     try {
-      const [summaryRes, messageRes, reviewRes, testDriveRes] = await Promise.all([
+      const [summaryRes, messageRes, reviewRes, testDriveRes] = await Promise.allSettled([
         axios.get(`${ADMIN_BASE_URL}/dashboard`),
         axios.get(`${MESSAGE_BASE_URL}/all`),
         axios.get(`${REVIEW_BASE_URL}/all`),
         axios.get(`${TESTDRIVE_BASE_URL}/all`),
       ]);
 
-      const summary = summaryRes.data || { users: 0, cars: 0, inquiries: 0 };
+      const summary =
+        summaryRes.status === "fulfilled"
+          ? summaryRes.value.data || { users: 0, cars: 0, inquiries: 0 }
+          : { users: 0, cars: 0, inquiries: 0 };
+
+      const messages =
+        messageRes.status === "fulfilled" && Array.isArray(messageRes.value.data)
+          ? messageRes.value.data.length
+          : 0;
+
+      const reviews =
+        reviewRes.status === "fulfilled" && Array.isArray(reviewRes.value.data)
+          ? reviewRes.value.data.length
+          : 0;
+
+      const testDrives =
+        testDriveRes.status === "fulfilled" && Array.isArray(testDriveRes.value.data)
+          ? testDriveRes.value.data.length
+          : 0;
 
       setStats({
         users: summary.users || 0,
         cars: summary.cars || 0,
         inquiries: summary.inquiries || 0,
-        messages: Array.isArray(messageRes.data) ? messageRes.data.length : 0,
-        reviews: Array.isArray(reviewRes.data) ? reviewRes.data.length : 0,
-        testDrives: Array.isArray(testDriveRes.data) ? testDriveRes.data.length : 0,
+        messages,
+        reviews,
+        testDrives,
       });
+
+      const failedSources = [
+        summaryRes.status !== "fulfilled" ? "Summary" : null,
+        messageRes.status !== "fulfilled" ? "Messages" : null,
+        reviewRes.status !== "fulfilled" ? "Reviews" : null,
+        testDriveRes.status !== "fulfilled" ? "Test Drives" : null,
+      ].filter(Boolean);
+
+      if (failedSources.length > 0) {
+        setNotice(`Some data could not be loaded: ${failedSources.join(", ")}.`);
+      }
+
+      if (summaryRes.status !== "fulfilled") {
+        setError("Dashboard summary endpoint is unavailable right now.");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load dashboard stats");
     } finally {
@@ -116,13 +153,29 @@ export const AdminDashboard = () => {
     return <p className="text-gray-600">Loading dashboard...</p>;
   }
 
-  if (error) {
-    return <p className="text-red-600">{error}</p>;
-  }
-
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-5">Admin Dashboard</h2>
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center justify-between gap-3">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={fetchDashboard}
+            className="rounded-md bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-xs font-semibold"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {notice && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          {notice}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl shadow p-5 border border-gray-100">
           <p className="text-sm text-gray-500">Total Users</p>

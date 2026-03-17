@@ -36,6 +36,8 @@ export const AdminTestDrives = () => {
   };
 
   useEffect(() => {
+    setSearchQuery("");
+    setStatusFilter("all");
     fetchTestDrives();
   }, []);
 
