@@ -9,7 +9,7 @@ import { Signup } from "../components/Signup";
 // ==============================
 // CUSTOMER COMPONENTS
 // ==============================
-import { CustomerNavbar, CarList, CarDetails, GetApiDemo, UseEffectDemo } from "../components/customer/index.js";
+import { CustomerNavbar, CustomerHome } from "../components/customer/index.js";
 
 // ==============================
 // ADMIN COMPONENTS
@@ -50,10 +50,7 @@ const router = createBrowserRouter([
    {
       path:'/customer', element:<CustomerNavbar></CustomerNavbar>,
       children: [
-         {path:'carlist', element:<CarList></CarList>},
-         {path:'cardetails', element:<CarDetails></CarDetails>},
-         {path:'getapidemo', element:<GetApiDemo></GetApiDemo>},
-         {path:'useeffectdemo', element:<UseEffectDemo></UseEffectDemo>},
+         { index: true, element:<CustomerHome /> },
       ]
    },
    // Admin

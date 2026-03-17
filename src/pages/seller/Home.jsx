@@ -2,19 +2,25 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FaSearch,
-  FaTags,
-  FaShieldAlt,
+  FaArrowRight,
+  FaCheckCircle,
   FaCarSide,
   FaUsers,
   FaEnvelope,
   FaStar,
   FaTools,
   FaClipboardCheck,
+  FaBolt,
+  FaGasPump,
+  FaRoad,
+  FaHandshake,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import UserNavbar from "../../components/UserNavbar";
 import { isAdminAuthenticated } from "../../utils/auth";
+import SellCarModel from "../../components/seller/SellCarModel";
 
 const Home = () => {
   const canOpenAdminPanel = isAdminAuthenticated();
@@ -24,6 +30,8 @@ const Home = () => {
   const [query, setQuery] = useState("");
   const [fuelFilter, setFuelFilter] = useState("all");
   const [priceSort, setPriceSort] = useState("default");
+  const [savedCars, setSavedCars] = useState([]);
+  const [isSellWizardOpen, setIsSellWizardOpen] = useState(false);
   const [platformStats, setPlatformStats] = useState({
     users: 0,
     cars: 0,
@@ -124,47 +132,81 @@ const Home = () => {
     }).format(numeric);
   };
 
+  const toggleSave = (carId) => {
+    setSavedCars((prev) =>
+      prev.includes(carId) ? prev.filter((id) => id !== carId) : [...prev, carId]
+    );
+  };
+
+  const featuredCars = visibleCars.slice(0, 9);
+
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#d6f6ff,_#f8fbff_45%,_#eef6ff)] text-slate-900">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f5f0e8_0%,_#f8f7f3_35%,_#eff3f4_100%)] text-slate-900">
       <UserNavbar />
 
-      <section className="relative overflow-hidden py-20">
-        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl" />
-        <div className="absolute -bottom-20 -right-16 h-72 w-72 rounded-full bg-orange-300/40 blur-3xl" />
+      <section className="relative overflow-hidden py-16 md:py-20">
+        <div className="absolute -top-24 -left-20 h-72 w-72 rounded-full bg-amber-300/30 blur-3xl" />
+        <div className="absolute -bottom-16 -right-14 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl" />
         <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-10 items-center">
-          <div className="text-center lg:text-left">
+          <div>
+            <p className="uppercase tracking-[0.2em] text-xs md:text-sm text-amber-700 font-semibold mb-4">
+              Premium Automotive Marketplace
+            </p>
             <motion.h1
               initial={{ opacity: 0, y: -40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="text-4xl md:text-6xl font-black tracking-tight mb-5 text-cyan-900"
+              className="text-4xl md:text-6xl font-black tracking-tight mb-5 text-slate-900"
             >
-              Smart Car Marketplace Powered By Car Scout
+              Buy Smarter. Sell Faster. Trade With Confidence.
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-base md:text-lg mb-8 text-slate-700 max-w-2xl"
+              className="text-base md:text-lg mb-8 text-slate-700 max-w-2xl leading-relaxed"
             >
-              Buy and sell cars with a complete platform that includes inquiry handling,
-              reviews, test-drive tracking, message flow, and admin-level management.
+              Car Scout is built for both sides of the market. Buyers get verified inventory,
+              smart filtering, and quick actions. Sellers get faster listing flow, better visibility,
+              and lead-ready inquiries.
             </motion.p>
 
-            <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
+            <div className="flex flex-wrap items-center gap-3">
               <Link
-                to="/sellcar"
-                className="bg-cyan-700 hover:bg-cyan-800 text-white px-6 py-3 rounded-full text-sm font-semibold"
+                to="/customer"
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-full text-sm font-semibold"
               >
-                Start Selling
+                Start Buying <FaArrowRight />
               </Link>
+              <button
+                type="button"
+                onClick={() => setIsSellWizardOpen(true)}
+                className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full text-sm font-semibold"
+              >
+                Start Selling <FaArrowRight />
+              </button>
               <a
                 href="#featured-cars"
-                className="border border-cyan-300 hover:border-cyan-700 px-6 py-3 rounded-full text-sm font-semibold text-cyan-900"
+                className="border border-slate-300 hover:border-slate-700 px-6 py-3 rounded-full text-sm font-semibold text-slate-800"
               >
-                Browse Cars
+                Explore Inventory
               </a>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-3 mt-8">
+              <div className="rounded-xl bg-white/90 border border-slate-200 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Available Cars</p>
+                <p className="text-2xl font-black text-slate-900">{platformStats.cars}</p>
+              </div>
+              <div className="rounded-xl bg-white/90 border border-slate-200 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Buyer Activity</p>
+                <p className="text-2xl font-black text-slate-900">{platformStats.inquiries}</p>
+              </div>
+              <div className="rounded-xl bg-white/90 border border-slate-200 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Test Drives</p>
+                <p className="text-2xl font-black text-slate-900">{platformStats.testDrives}</p>
+              </div>
             </div>
           </div>
 
@@ -172,8 +214,16 @@ const Home = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="grid md:grid-cols-4 gap-3 bg-white/95 border border-cyan-100 rounded-2xl p-4 shadow-xl"
+            className="grid md:grid-cols-4 gap-3 bg-white/95 border border-slate-200 rounded-2xl p-4 shadow-xl"
           >
+            <div className="md:col-span-4 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white p-4">
+              <p className="text-xs uppercase tracking-wider text-slate-300">Deal Engine</p>
+              <h3 className="text-lg font-bold">Buyer + Seller Functions In One Screen</h3>
+              <p className="text-sm text-slate-200 mt-1">
+                Search, compare, save favorites, and instantly move into buy or sell journeys.
+              </p>
+            </div>
+
             <div className="md:col-span-2 flex bg-white rounded-xl overflow-hidden border border-slate-200">
               <input
                 type="text"
@@ -184,7 +234,7 @@ const Home = () => {
               />
               <button
                 type="button"
-                className="bg-cyan-700 hover:bg-cyan-800 px-6 flex items-center text-white"
+                className="bg-slate-900 hover:bg-black px-6 flex items-center text-white"
               >
                 <FaSearch />
               </button>
@@ -212,38 +262,70 @@ const Home = () => {
             </select>
 
             <div className="md:col-span-4 flex flex-wrap items-center justify-between gap-3 mt-1">
-              <span className="bg-cyan-100 text-cyan-900 px-4 py-2 rounded-full text-sm font-medium">
+              <span className="bg-amber-100 text-amber-900 px-4 py-2 rounded-full text-sm font-medium">
                 {visibleCars.length} cars found
               </span>
-              {canOpenAdminPanel && (
+              <div className="flex items-center gap-2">
                 <Link
-                  to="/adminpanel/dashboard"
-                  className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                  to="/customer"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full text-sm font-semibold"
                 >
-                  Open Admin Dashboard
+                  Buy Cars
                 </Link>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setIsSellWizardOpen(true)}
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                >
+                  Sell Car
+                </button>
+                {canOpenAdminPanel && (
+                  <Link
+                    to="/adminpanel/dashboard"
+                    className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                  >
+                    Admin
+                  </Link>
+                )}
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
       <section className="max-w-7xl mx-auto px-6 pb-10">
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="rounded-2xl bg-white border border-cyan-100 shadow-sm p-5">
-            <FaCarSide className="text-2xl text-cyan-700 mb-3" />
-            <h3 className="font-bold text-lg">Huge Car Inventory</h3>
-            <p className="text-sm text-slate-600 mt-1">Browse latest and pre-owned vehicles in one place.</p>
+        <div className="grid lg:grid-cols-2 gap-5">
+          <div className="rounded-3xl bg-white border border-emerald-100 shadow-sm p-6">
+            <p className="text-xs uppercase tracking-widest text-emerald-700 font-semibold mb-2">Buyer Side</p>
+            <h3 className="font-black text-2xl text-slate-900 mb-4">Find The Right Car, Faster</h3>
+            <div className="space-y-3 text-sm text-slate-700">
+              <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Search by brand, model, fuel and price.</p>
+              <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Save shortlisted cars from featured inventory.</p>
+              <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Move directly into buyer flow and compare options.</p>
+            </div>
+            <Link
+              to="/customer"
+              className="inline-flex items-center gap-2 mt-5 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold"
+            >
+              Go To Buyer Dashboard <FaArrowRight />
+            </Link>
           </div>
-          <div className="rounded-2xl bg-white border border-cyan-100 shadow-sm p-5">
-            <FaTags className="text-2xl text-orange-500 mb-3" />
-            <h3 className="font-bold text-lg">Competitive Prices</h3>
-            <p className="text-sm text-slate-600 mt-1">Transparent deals with no hidden surprises.</p>
-          </div>
-          <div className="rounded-2xl bg-white border border-cyan-100 shadow-sm p-5">
-            <FaShieldAlt className="text-2xl text-emerald-600 mb-3" />
-            <h3 className="font-bold text-lg">Trusted Listings</h3>
-            <p className="text-sm text-slate-600 mt-1">Reliable sellers and quality-first marketplace.</p>
+
+          <div className="rounded-3xl bg-white border border-amber-100 shadow-sm p-6">
+            <p className="text-xs uppercase tracking-widest text-amber-700 font-semibold mb-2">Seller Side</p>
+            <h3 className="font-black text-2xl text-slate-900 mb-4">List, Manage, And Close More Deals</h3>
+            <div className="space-y-3 text-sm text-slate-700">
+              <p className="flex items-center gap-2"><FaCheckCircle className="text-amber-600" /> Add car details with pricing and vehicle specs.</p>
+              <p className="flex items-center gap-2"><FaCheckCircle className="text-amber-600" /> Get buyer inquiries, messages, and review activity.</p>
+              <p className="flex items-center gap-2"><FaCheckCircle className="text-amber-600" /> Convert leads with test-drive scheduling flow.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSellWizardOpen(true)}
+              className="inline-flex items-center gap-2 mt-5 bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold"
+            >
+              Go To Sell Car Form <FaArrowRight />
+            </button>
           </div>
         </div>
       </section>
@@ -264,9 +346,9 @@ const Home = () => {
               <p className="text-xs uppercase text-green-700 font-semibold">Cars</p>
               <p className="text-2xl font-black text-green-900">{platformStats.cars}</p>
             </div>
-            <div className="rounded-xl bg-purple-50 border border-purple-100 p-4 text-center">
-              <p className="text-xs uppercase text-purple-700 font-semibold">Inquiries</p>
-              <p className="text-2xl font-black text-purple-900">{platformStats.inquiries}</p>
+            <div className="rounded-xl bg-cyan-50 border border-cyan-100 p-4 text-center">
+              <p className="text-xs uppercase text-cyan-700 font-semibold">Inquiries</p>
+              <p className="text-2xl font-black text-cyan-900">{platformStats.inquiries}</p>
             </div>
             <div className="rounded-xl bg-indigo-50 border border-indigo-100 p-4 text-center">
               <p className="text-xs uppercase text-indigo-700 font-semibold">Messages</p>
@@ -319,14 +401,14 @@ const Home = () => {
 
       <section id="featured-cars" className="max-w-7xl mx-auto px-6 py-16">
 
-        <h2 className="text-3xl font-black text-center mb-12 text-slate-900">Featured Cars</h2>
+        <h2 className="text-3xl font-black text-center mb-12 text-slate-900">Featured Cars To Buy</h2>
 
         {loading && <p className="text-center text-slate-600">Loading cars...</p>}
         {error && <p className="text-center text-red-600">{error}</p>}
 
         {!loading && !error && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {visibleCars.slice(0, 9).map((car) => (
+            {featuredCars.map((car) => (
               <motion.div
                 whileHover={{ y: -6 }}
                 key={car._id}
@@ -343,13 +425,35 @@ const Home = () => {
                     {car.brand || "Unknown"} {car.model || "Model"}
                   </h3>
 
-                  <p className="text-slate-500">
-                    {car.year || "N/A"} • {car.fuelType || "N/A"} • {car.transmission || "N/A"}
+                  <p className="text-slate-500 flex flex-wrap gap-3 text-sm mt-1">
+                    <span className="inline-flex items-center gap-1"><FaRoad className="text-slate-400" /> {car.year || "N/A"}</span>
+                    <span className="inline-flex items-center gap-1"><FaGasPump className="text-slate-400" /> {car.fuelType || "N/A"}</span>
+                    <span className="inline-flex items-center gap-1"><FaBolt className="text-slate-400" /> {car.transmission || "N/A"}</span>
                   </p>
 
-                  <p className="text-cyan-700 font-bold mt-2 text-lg">{formatPrice(car.price)}</p>
+                  <p className="text-amber-700 font-bold mt-2 text-lg">{formatPrice(car.price)}</p>
 
                   <p className="text-sm text-slate-600 mt-1">Mileage: {car.mileage || "N/A"} km</p>
+
+                  <div className="grid grid-cols-2 gap-2 mt-4">
+                    <Link
+                      to="/customer"
+                      className="text-center bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-semibold"
+                    >
+                      Buy Now
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => toggleSave(car._id)}
+                      className={`py-2 rounded-lg text-sm font-semibold ${
+                        savedCars.includes(car._id)
+                          ? "bg-slate-900 text-white"
+                          : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {savedCars.includes(car._id) ? "Saved" : "Save"}
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -361,23 +465,58 @@ const Home = () => {
         )}
       </section>
 
-      <section className="bg-gradient-to-r from-cyan-700 to-sky-600 text-white py-16 text-center">
+      <section className="max-w-7xl mx-auto px-6 pb-16">
+        <div className="grid lg:grid-cols-3 gap-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+            <FaHandshake className="text-2xl text-emerald-600 mb-3" />
+            <h3 className="font-bold text-lg">Buy Flow</h3>
+            <p className="text-sm text-slate-600 mt-1">Search inventory, shortlist cars, and move into buyer routes in one click.</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+            <FaMoneyBillWave className="text-2xl text-amber-600 mb-3" />
+            <h3 className="font-bold text-lg">Sell Flow</h3>
+            <p className="text-sm text-slate-600 mt-1">Create listing details, set your price, and start receiving inquiry signals fast.</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+            <FaCarSide className="text-2xl text-slate-700 mb-3" />
+            <h3 className="font-bold text-lg">Operations</h3>
+            <p className="text-sm text-slate-600 mt-1">Manage cars, messages, reviews, and test drives with admin-enabled oversight.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-800 text-white py-16 text-center">
 
         <h2 className="text-3xl font-bold mb-4">
-          Ready to Sell Your Car?
+          Ready To Buy Or Sell Your Next Car?
         </h2>
 
         <p className="mb-6">
-          List your car and reach thousands of buyers instantly.
+          Choose your side and launch into a high-conversion experience.
         </p>
 
-        <Link to="/sellcar">
-          <button className="bg-white text-cyan-700 px-8 py-3 rounded-lg font-semibold hover:scale-105 transition">
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link
+            to="/customer"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold"
+          >
+            Buy Cars
+          </Link>
+          <button
+            type="button"
+            onClick={() => setIsSellWizardOpen(true)}
+            className="bg-white text-slate-900 px-8 py-3 rounded-lg font-semibold hover:scale-105 transition"
+          >
             Sell Your Car
           </button>
-        </Link>
+        </div>
 
       </section>
+
+      <SellCarModel
+        isOpen={isSellWizardOpen}
+        onClose={() => setIsSellWizardOpen(false)}
+      />
 
     </div>
   );

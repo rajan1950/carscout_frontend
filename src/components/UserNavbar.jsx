@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FaChevronDown, FaUserCircle } from "react-icons/fa";
+import { FaCarSide, FaChevronDown, FaUserCircle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import {
   AUTH_SESSION_EVENT,
@@ -84,10 +84,16 @@ const UserNavbar = () => {
     "inline-flex items-center justify-center rounded-full border border-cyan-300 px-4 py-2 text-base font-semibold text-slate-700 transition hover:border-cyan-600 hover:text-cyan-700 hover:bg-cyan-50";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-cyan-100/80 bg-white/85 backdrop-blur shadow-sm gradient-to-b from-white/95 to-white/80 text-slate-900 ">
+    <header className="sticky top-0 z-30 border-b border-cyan-100/80 bg-white/85 backdrop-blur shadow-sm bg-gradient-to-b from-white/95 to-white/80 text-slate-900">
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-3">
-        <Link to="/" className="text-xl md:text-2xl font-black tracking-tight text-cyan-900">
-          Car Scout
+        <Link
+          to="/"
+          className="group inline-flex items-center gap-3 text-xl md:text-2xl font-black tracking-tight text-cyan-900"
+        >
+          <span>Car Scout</span>
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cyan-200 bg-gradient-to-br from-cyan-700 to-sky-600 text-white shadow-sm transition group-hover:scale-105 group-hover:shadow-md">
+            <FaCarSide className="text-sm" />
+          </span>
         </Link>
 
         <div className="ml-auto flex items-center gap-2">
