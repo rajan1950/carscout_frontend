@@ -16,8 +16,12 @@ export const AdminTestDrives = () => {
   const [testDrives, setTestDrives] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchTestDrives = async () => {
     try {
@@ -45,6 +49,19 @@ export const AdminTestDrives = () => {
     setEditingId(null);
   };
 
+  const openCreateModal = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    if (submitting) {
+      return;
+    }
+    setIsModalOpen(false);
+    resetForm();
+  };
+
   const startEdit = (item) => {
     setEditingId(item._id);
     setForm({
@@ -54,10 +71,14 @@ export const AdminTestDrives = () => {
       location: item.location || "",
       status: item.status || "pending",
     });
+    setIsModalOpen(true);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const payload = {
       userId: form.userId,
       carId: form.carId,
@@ -66,6 +87,7 @@ export const AdminTestDrives = () => {
       status: form.status,
     };
 
+    setSubmitting(true);
     try {
       if (editingId) {
         const res = await axios.put(`${TESTDRIVE_BASE_URL}/${editingId}`, payload);
@@ -89,8 +111,11 @@ export const AdminTestDrives = () => {
         toast.success("Test drive created");
       }
       resetForm();
+      setIsModalOpen(false);
     } catch (err) {
       toast.error(err.response?.data?.message || "Operation failed");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -104,117 +129,100 @@ export const AdminTestDrives = () => {
     }
   };
 
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const filteredTestDrives = testDrives.filter((item) => {
+    const userName = (item.userId?.firstname || item.userId || "").toString().toLowerCase();
+    const carLabel = (item.carId?.brand || item.carId || "").toString().toLowerCase();
+    const location = (item.location || "").toLowerCase();
+    const status = (item.status || "pending").toLowerCase();
+
+    const matchesSearch =
+      normalizedSearch.length === 0 ||
+      userName.includes(normalizedSearch) ||
+      carLabel.includes(normalizedSearch) ||
+      location.includes(normalizedSearch);
+
+    const matchesStatus = statusFilter === "all" || status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-5">Test Drives</h2>
+      <h2 className="text-4xl font-bold text-slate-800 mb-8">Test Drive Management</h2>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-xl shadow border border-gray-100 p-4 mb-6 grid grid-cols-1 md:grid-cols-2 gap-3"
-      >
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-6 flex flex-col lg:flex-row gap-3 lg:items-center">
         <input
-          name="userId"
-          value={form.userId}
-          onChange={handleChange}
-          placeholder="User ID"
-          required
-          className="border border-gray-300 rounded px-3 py-2"
-        />
-        <input
-          name="carId"
-          value={form.carId}
-          onChange={handleChange}
-          placeholder="Car ID"
-          required
-          className="border border-gray-300 rounded px-3 py-2"
-        />
-        <input
-          type="date"
-          name="date"
-          value={form.date}
-          onChange={handleChange}
-          required
-          className="border border-gray-300 rounded px-3 py-2"
-        />
-        <input
-          name="location"
-          value={form.location}
-          onChange={handleChange}
-          placeholder="Location"
-          required
-          className="border border-gray-300 rounded px-3 py-2"
+          type="text"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Search test drives..."
+          className="w-full lg:flex-1 border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-indigo-300"
         />
         <select
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-          className="border border-gray-300 rounded px-3 py-2"
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+          className="w-full lg:w-48 border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-indigo-300"
         >
+          <option value="all">All Status</option>
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
           <option value="completed">Completed</option>
           <option value="cancelled">Cancelled</option>
         </select>
-        <div className="md:col-span-2 flex gap-2">
-          <button
-            type="submit"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
-          >
-            {editingId ? "Update Test Drive" : "Create Test Drive"}
-          </button>
-          {editingId && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
+        <button
+          type="button"
+          onClick={openCreateModal}
+          className="w-full lg:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-3 font-semibold"
+        >
+          + Add Test Drive
+        </button>
+      </div>
 
       {loading && <p className="text-gray-600">Loading test drives...</p>}
       {error && <p className="text-red-600 mb-3">{error}</p>}
 
       {!loading && !error && (
-        <div className="overflow-x-auto bg-white rounded-xl shadow border border-gray-100">
+        <div className="overflow-x-auto bg-white rounded-2xl border border-gray-200">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 text-gray-700">
+            <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
               <tr>
                 <th className="text-left px-4 py-3">User</th>
                 <th className="text-left px-4 py-3">Car</th>
                 <th className="text-left px-4 py-3">Date</th>
                 <th className="text-left px-4 py-3">Location</th>
                 <th className="text-left px-4 py-3">Status</th>
-                <th className="text-left px-4 py-3">Action</th>
+                <th className="text-left px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {testDrives.map((item) => (
+              {filteredTestDrives.map((item) => (
                 <tr key={item._id} className="border-t border-gray-100">
-                  <td className="px-4 py-3">{item.userId?.firstname || item.userId || "-"}</td>
-                  <td className="px-4 py-3">{item.carId?.brand || item.carId || "-"}</td>
-                  <td className="px-4 py-3">{item.date ? new Date(item.date).toLocaleDateString() : "-"}</td>
-                  <td className="px-4 py-3">{item.location || "-"}</td>
-                  <td className="px-4 py-3 capitalize">{item.status || "pending"}</td>
+                  <td className="px-4 py-4 font-semibold text-slate-800">{item.userId?.firstname || item.userId || "-"}</td>
+                  <td className="px-4 py-4 text-gray-700">{item.carId?.brand || item.carId || "-"}</td>
+                  <td className="px-4 py-4 text-gray-600">{item.date ? new Date(item.date).toLocaleDateString() : "-"}</td>
+                  <td className="px-4 py-4 text-gray-600">{item.location || "-"}</td>
+                  <td className="px-4 py-4">
+                    <span className="inline-block capitalize bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">
+                      {item.status || "pending"}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 flex gap-2">
                     <button
                       onClick={() => startEdit(item)}
-                      className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded"
+                      className="bg-slate-100 hover:bg-slate-200 text-indigo-700 px-3 py-2 rounded-lg"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(item._id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg"
                     >
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
-              {testDrives.length === 0 && (
+              {filteredTestDrives.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
                     No test drives found
@@ -223,6 +231,99 @@ export const AdminTestDrives = () => {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={closeModal}
+        >
+          <div
+            className="w-full max-w-3xl bg-white rounded-2xl border border-gray-200 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-5 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-slate-800">
+                {editingId ? "Update Test Drive" : "Add Test Drive"}
+              </h3>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+                aria-label="Close"
+              >
+                x
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                name="userId"
+                value={form.userId}
+                onChange={handleChange}
+                placeholder="User ID"
+                required
+                className="border border-gray-300 rounded-xl px-3 py-2"
+              />
+              <input
+                name="carId"
+                value={form.carId}
+                onChange={handleChange}
+                placeholder="Car ID"
+                required
+                className="border border-gray-300 rounded-xl px-3 py-2"
+              />
+              <input
+                type="date"
+                name="date"
+                value={form.date}
+                onChange={handleChange}
+                required
+                className="border border-gray-300 rounded-xl px-3 py-2"
+              />
+              <input
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                placeholder="Location"
+                required
+                className="border border-gray-300 rounded-xl px-3 py-2"
+              />
+              <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                className="border border-gray-300 rounded-xl px-3 py-2 md:col-span-2"
+              >
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+
+              <div className="md:col-span-2 flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
+                >
+                  {submitting
+                    ? "Please wait..."
+                    : editingId
+                    ? "Update Test Drive"
+                    : "Create Test Drive"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
