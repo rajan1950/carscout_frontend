@@ -28,6 +28,7 @@ export const AdminSidebar = () => {
         { to: "users", label: "Users", icon: GroupIcon },
         { to: "cars", label: "Cars", icon: DirectionsCarFilledIcon },
         { to: "testdrives", label: "Test Drives", icon: EventAvailableIcon },
+        { to: "settings", label: "Settings", icon: SettingsIcon },
       ],
     },
     {
@@ -37,10 +38,6 @@ export const AdminSidebar = () => {
         { to: "messages", label: "Messages", icon: MailOutlineIcon },
         { to: "reviews", label: "Reviews", icon: ReviewsIcon },
       ],
-    },
-    {
-      title: "System",
-      items: [{ to: "settings", label: "Settings", icon: SettingsIcon }],
     },
   ];
 
