@@ -70,10 +70,10 @@ export const AdminSettings = () => {
             <option value="dashboard">Dashboard</option>
             <option value="users">Users</option>
             <option value="cars">Cars</option>
+            <option value="testdrives">Test Drives</option>
             <option value="inquiries">Inquiries</option>
             <option value="messages">Messages</option>
             <option value="reviews">Reviews</option>
-            <option value="testdrives">Test Drives</option>
             <option value="settings">Settings</option>
           </select>
         </label>
