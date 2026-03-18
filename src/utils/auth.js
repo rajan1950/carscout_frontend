@@ -3,6 +3,25 @@ export const AUTH_SESSION_EVENT = "carscout-auth-session-updated";
 
 export const normalizeRole = (role) => String(role || "").trim().toLowerCase();
 
+const toTrimmed = (value) => String(value || "").trim();
+
+const toDigits = (value) => String(value || "").replace(/\D/g, "");
+
+const normalizeProfileFields = (details = {}) => ({
+  name: toTrimmed(
+    details.name || details.fullName || details.displayName || details.userName || details.username
+  ),
+  email: toTrimmed(details.email),
+  profileImage: toTrimmed(
+    details.profileImage || details.profilePicture || details.image || details.avatar || details.photo
+  ),
+  mobile: toDigits(details.mobile || details.phone || details.phoneNumber),
+  address: toTrimmed(details.address || details.streetAddress),
+  city: toTrimmed(details.city),
+  area: toTrimmed(details.area || details.locality),
+  pinCode: toDigits(details.pinCode || details.pincode || details.zipCode),
+});
+
 export const saveAuthSession = (payload) => {
   const role = normalizeRole(payload?.role);
 
@@ -40,35 +59,51 @@ export const clearAuthSession = () => {
   window.dispatchEvent(new Event(AUTH_SESSION_EVENT));
 };
 
+export const updateAuthProfile = (details = {}) => {
+  const session = readAuthSession();
+
+  if (!session?.role) {
+    return null;
+  }
+
+  const currentUser = session.user || {};
+  const patch = normalizeProfileFields(details);
+
+  const mergedUser = {
+    ...currentUser,
+    ...patch,
+  };
+
+  const updatedSession = {
+    ...session,
+    user: mergedUser,
+  };
+
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedSession));
+  window.dispatchEvent(new Event(AUTH_SESSION_EVENT));
+  return updatedSession;
+};
+
 export const getAuthProfile = () => {
   const session = readAuthSession();
   const user = session?.user || {};
 
   const role = normalizeRole(session?.role);
-  const name =
-    user?.name ||
-    user?.displayName ||
-    user?.fullName ||
-    user?.userName ||
-    user?.username ||
-    user?.firstName ||
-    user?.email ||
-    "Profile";
-
-  const email = user?.email || "";
-  const image =
-    user?.profileImage ||
-    user?.profilePicture ||
-    user?.image ||
-    user?.avatar ||
-    user?.photo ||
-    "";
+  const normalized = normalizeProfileFields(user);
+  const name = normalized.name || user?.firstName || user?.email || "Profile";
+  const email = normalized.email || "";
+  const image = normalized.profileImage || "";
 
   return {
     role,
     name,
     email,
     image,
+    mobile: normalized.mobile,
+    address: normalized.address,
+    city: normalized.city,
+    area: normalized.area,
+    pinCode: normalized.pinCode,
     isLoggedIn: Boolean(role),
     isAdmin: role === "admin",
   };
