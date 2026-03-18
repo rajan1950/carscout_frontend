@@ -31,6 +31,7 @@ import { AdminRouteGuard } from "../components/admin/AdminRouteGuard";
 // ==============================
 import Home from "../pages/seller/Home.jsx";
 import SellCar from "../pages/seller/SellCar.jsx";
+import ProfilePage from "../pages/ProfilePage.jsx";
 
 // ==============================
 // ERROR PAGE
@@ -46,6 +47,7 @@ const router = createBrowserRouter([
    {path:'/signup', element: <Signup/>},
    {path:'/', element: <Home/>},
    {path:'/sellcar', element: <SellCar/>},
+   {path:'/profile', element: <ProfilePage/>},
    // Customer
    {
       path:'/customer', element:<CustomerNavbar></CustomerNavbar>,
