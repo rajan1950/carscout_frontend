@@ -80,6 +80,13 @@ const UserNavbar = () => {
     navigate("/login");
   };
 
+  const hasCompleteProfile =
+    Boolean(profile.mobile) &&
+    Boolean(profile.address) &&
+    Boolean(profile.city) &&
+    Boolean(profile.area) &&
+    Boolean(profile.pinCode);
+
   const navButtonClass =
     "inline-flex items-center justify-center rounded-full border border-cyan-300 px-4 py-2 text-base font-semibold text-slate-700 transition hover:border-cyan-600 hover:text-cyan-700 hover:bg-cyan-50";
 
@@ -155,6 +162,14 @@ const UserNavbar = () => {
                   </div>
 
                   <div className="mt-3 space-y-2">
+                    <Link
+                      to="/profile"
+                      onClick={() => setProfileOpen(false)}
+                      className="block rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-cyan-300 hover:bg-cyan-50"
+                    >
+                      {hasCompleteProfile ? "Profile" : "Complete Profile"}
+                    </Link>
+
                     <Link
                       to="/"
                       onClick={() => setProfileOpen(false)}
@@ -238,6 +253,16 @@ const UserNavbar = () => {
                   {item.label}
                 </Link>
               )
+            )}
+
+            {profile.isLoggedIn && (
+              <Link
+                to="/profile"
+                onClick={() => setOpen(false)}
+                className={navButtonClass}
+              >
+                {hasCompleteProfile ? "Profile" : "Complete Profile"}
+              </Link>
             )}
 
             {profile.isLoggedIn && (
