@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaCarSide, FaTag } from "react-icons/fa";
 import SellCarModel from "../seller/SellCarModel";
-import { readAuthSession } from "../../utils/auth";
+import { getAuthUserId, readAuthSession } from "../../utils/auth";
+import { useNotifications } from "../../hooks/useNotifications";
 import { FilterBar } from "./FilterBar";
 import { CompareSection } from "./CompareSection";
 import { FavoriteSection } from "./FavoriteSection";
@@ -24,6 +25,7 @@ const formatPrice = (price) => {
 };
 
 export const CustomerHome = () => {
+  const { fetchUnreadCount } = useNotifications();
   const [isSellWizardOpen, setIsSellWizardOpen] = useState(false);
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ export const CustomerHome = () => {
 
   const session = readAuthSession();
   const currentUser = session?.user || {};
-  const userId = currentUser?._id || currentUser?.id || "";
+  const userId = getAuthUserId();
   const defaultName =
     currentUser?.name ||
     currentUser?.fullName ||
@@ -206,6 +208,7 @@ export const CustomerHome = () => {
       };
       await axios.post("http://localhost:4444/testdrive/add", payload);
       toast.success("Test drive requested");
+      fetchUnreadCount();
       setTestDriveForm({ date: "", location: "" });
       closeActionModal();
     } catch (err) {
@@ -337,13 +340,13 @@ export const CustomerHome = () => {
           <Link to="/" className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-lg font-semibold">
             <FaCarSide /> Back To Home
           </Link>
-          <button
+          {/* <button
             type="button"
             onClick={() => setIsSellWizardOpen(true)}
             className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-lg font-semibold"
           >
             <FaTag /> Sell From Popup
-          </button>
+          </button> */}
         </div>
       </section>
 
