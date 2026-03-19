@@ -1,6 +1,7 @@
 import { Slide, ToastContainer } from "react-toastify"
 import AppRouter from "./router/AppRouter"
 import axios from "axios"
+import { NotificationProvider } from "./context/NotificationContext"
 
 function App() {
 
@@ -8,7 +9,9 @@ function App() {
 
   return (
     <>
-      <AppRouter></AppRouter>
+      <NotificationProvider>
+        <AppRouter></AppRouter>
+      </NotificationProvider>
       <ToastContainer
         position="top-center"
         autoClose={3000}
