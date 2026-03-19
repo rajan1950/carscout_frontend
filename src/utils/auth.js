@@ -54,6 +54,41 @@ export const readAuthSession = () => {
   }
 };
 
+const decodeJwtPayload = (token) => {
+  if (!token || typeof token !== "string") {
+    return null;
+  }
+
+  const parts = token.split(".");
+  if (parts.length < 2) {
+    return null;
+  }
+
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+};
+
+export const getAuthUserId = () => {
+  const session = readAuthSession();
+  const user = session?.user || {};
+
+  if (user?._id) {
+    return user._id;
+  }
+
+  if (user?.id) {
+    return user.id;
+  }
+
+  const payload = decodeJwtPayload(session?.token);
+  return payload?.id || payload?.userId || payload?.sub || "";
+};
+
 export const clearAuthSession = () => {
   localStorage.removeItem(AUTH_STORAGE_KEY);
   window.dispatchEvent(new Event(AUTH_SESSION_EVENT));
