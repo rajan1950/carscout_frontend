@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaCarSide, FaChevronDown, FaUserCircle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { NotificationBell } from "./notifications/NotificationBell";
 import {
   AUTH_SESSION_EVENT,
   clearAuthSession,
@@ -46,7 +47,7 @@ const UserNavbar = () => {
 
   const visibleItems = navItems.filter((item) => {
     if (item.label === "Admin") {
-      return profile.isAdmin;
+      return profile.isLoggedIn && profile.isAdmin;
     }
 
     if (profile.isLoggedIn) {
@@ -117,6 +118,8 @@ const UserNavbar = () => {
               )
             )}
           </nav>
+
+          {profile.isLoggedIn ? <NotificationBell className="hidden md:block" /> : null}
 
           {profile.isLoggedIn && (
             <div className="relative hidden md:block" ref={dropdownRef}>
@@ -231,6 +234,12 @@ const UserNavbar = () => {
               </div>
             </div>
           )}
+
+          {profile.isLoggedIn ? (
+            <div className="mb-3">
+              <NotificationBell />
+            </div>
+          ) : null}
 
           <nav className="flex flex-col gap-3">
             {visibleItems.map((item) =>
