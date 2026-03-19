@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { clearAuthSession, getAuthProfile } from "../../utils/auth";
 import { FaCarSide } from "react-icons/fa";
+import { NotificationBell } from "../notifications/NotificationBell";
 
 export const CustomerNavbar = () => {
   const navigate = useNavigate();
@@ -29,16 +30,15 @@ export const CustomerNavbar = () => {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* <NavLink to="/" className={(args) => `${navStyle(args)} ${navBase}`}>Home</NavLink>
-            <NavLink to="/customer" className={(args) => `${navStyle(args)} ${navBase}`}>Buyer Dashboard</NavLink>
-            <NavLink to="/sellcar" className={(args) => `${navStyle(args)} ${navBase}`}>Sell Car</NavLink> */}
-          </div>
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ">
+            <NavLink to="/notifications" className={(args) => `${navStyle(args)} ${navBase}`}>
+              Notifications
+            </NavLink>
+            <NotificationBell />
             <div className="hidden sm:block rounded-full border border-cyan-200 px-3 py-1.5 text-sm text-slate-700 bg-cyan-50">
               {profile.name}
             </div>
+
             <button
               onClick={handleLogout}
               className="bg-rose-600 text-white px-4 py-2 rounded-full hover:bg-rose-700 text-sm font-semibold"
