@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { createNotificationForUser } from "../../services/notificationService";
 import {
   defaultAdminSettings,
   readAdminSettings,
@@ -8,6 +9,14 @@ import {
 
 export const AdminSettings = () => {
   const [settings, setSettings] = useState(defaultAdminSettings);
+  const [notificationForm, setNotificationForm] = useState({
+    recipientId: "",
+    title: "",
+    body: "",
+    type: "system",
+    priority: "medium",
+  });
+  const [sendingNotification, setSendingNotification] = useState(false);
 
   useEffect(() => {
     setSettings(readAdminSettings());
@@ -30,6 +39,60 @@ export const AdminSettings = () => {
     setSettings(defaultAdminSettings);
     saveAdminSettings(defaultAdminSettings);
     toast.success("Settings reset to default");
+  };
+
+  const handleNotificationChange = (event) => {
+    const { name, value } = event.target;
+    setNotificationForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSendNotification = async (event) => {
+    event.preventDefault();
+
+    if (sendingNotification) {
+      return;
+    }
+
+    if (!notificationForm.recipientId.trim()) {
+      toast.error("Recipient user ID is required");
+      return;
+    }
+
+    if (!notificationForm.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+
+    if (!notificationForm.body.trim()) {
+      toast.error("Message body is required");
+      return;
+    }
+
+    setSendingNotification(true);
+
+    try {
+      await createNotificationForUser({
+        recipientId: notificationForm.recipientId.trim(),
+        title: notificationForm.title.trim(),
+        body: notificationForm.body.trim(),
+        type: notificationForm.type,
+        priority: notificationForm.priority,
+      });
+
+      toast.success("Notification sent successfully");
+      setNotificationForm((prev) => ({
+        ...prev,
+        title: "",
+        body: "",
+      }));
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to send notification");
+    } finally {
+      setSendingNotification(false);
+    }
   };
 
   return (
@@ -94,6 +157,94 @@ export const AdminSettings = () => {
             Reset Defaults
           </button>
         </div>
+      </div>
+
+      <div className="mt-6 bg-white rounded-xl shadow border border-gray-100 p-5 max-w-2xl">
+        <h3 className="text-lg font-semibold text-slate-800 mb-1">Send User Notification</h3>
+        <p className="text-sm text-slate-600 mb-4">
+          Send an in-app notification to a specific user by their user ID.
+        </p>
+
+        <form onSubmit={handleSendNotification} className="space-y-3">
+          <label className="block">
+            <span className="text-gray-700 font-medium">Recipient User ID</span>
+            <input
+              name="recipientId"
+              value={notificationForm.recipientId}
+              onChange={handleNotificationChange}
+              placeholder="e.g. 67f1a4..."
+              className="mt-2 w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-gray-700 font-medium">Title</span>
+            <input
+              name="title"
+              value={notificationForm.title}
+              onChange={handleNotificationChange}
+              placeholder="Notification title"
+              className="mt-2 w-full border border-gray-300 rounded px-3 py-2"
+              maxLength={120}
+              required
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-gray-700 font-medium">Message</span>
+            <textarea
+              name="body"
+              value={notificationForm.body}
+              onChange={handleNotificationChange}
+              placeholder="Write notification message"
+              className="mt-2 w-full border border-gray-300 rounded px-3 py-2"
+              rows={4}
+              maxLength={1000}
+              required
+            />
+          </label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-gray-700 font-medium">Type</span>
+              <select
+                name="type"
+                value={notificationForm.type}
+                onChange={handleNotificationChange}
+                className="mt-2 w-full border border-gray-300 rounded px-3 py-2"
+              >
+                <option value="system">System</option>
+                <option value="message">Message</option>
+                <option value="inquiry">Inquiry</option>
+                <option value="test_drive">Test Drive</option>
+                <option value="review">Review</option>
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-gray-700 font-medium">Priority</span>
+              <select
+                name="priority"
+                value={notificationForm.priority}
+                onChange={handleNotificationChange}
+                className="mt-2 w-full border border-gray-300 rounded px-3 py-2"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            disabled={sendingNotification}
+            className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white px-4 py-2 rounded font-semibold"
+          >
+            {sendingNotification ? "Sending..." : "Send Notification"}
+          </button>
+        </form>
       </div>
     </div>
   );
