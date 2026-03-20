@@ -65,6 +65,19 @@ export const CustomerHome = () => {
     comment: "",
   });
 
+  const fetchCars = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("http://localhost:4444/car/all");
+      setCars(Array.isArray(res.data) ? res.data : []);
+      setError("");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load buyer inventory");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const raw = localStorage.getItem(BUYER_FAVORITES_KEY);
     if (!raw) {
@@ -83,18 +96,6 @@ export const CustomerHome = () => {
   }, [favorites]);
 
   useEffect(() => {
-    const fetchCars = async () => {
-      try {
-        const res = await axios.get("http://localhost:4444/car/all");
-        setCars(Array.isArray(res.data) ? res.data : []);
-        setError("");
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to load buyer inventory");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCars();
   }, []);
 
@@ -376,6 +377,7 @@ export const CustomerHome = () => {
       <SellCarModel
         isOpen={isSellWizardOpen}
         onClose={() => setIsSellWizardOpen(false)}
+        onSuccess={fetchCars}
       />
     </div>
   );
