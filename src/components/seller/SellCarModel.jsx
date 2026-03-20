@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaChevronLeft } from "react-icons/fa";
-import axios from "axios";
 import { toast } from "react-toastify";
+import { sellCarApi } from "../../services/sellCarApi";
 
 const initialForm = {
   brand: "",
@@ -59,13 +59,10 @@ const modelByBrand = {
 
 const yearOptions = Array.from({ length: 15 }, (_, i) => String(new Date().getFullYear() - i));
 
-const SellCarModel = ({ isOpen, onClose }) => {
+const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
-  const [carImageFile, setCarImageFile] = useState(null);
-  const [carImagePreview, setCarImagePreview] = useState("");
-  const [carImageError, setCarImageError] = useState("");
 
   const selectedStep = stepConfig[step];
 
@@ -88,15 +85,9 @@ const SellCarModel = ({ isOpen, onClose }) => {
   };
 
   const closeAndReset = () => {
-    if (carImagePreview) {
-      URL.revokeObjectURL(carImagePreview);
-    }
     setStep(0);
     setForm(initialForm);
     setSubmitting(false);
-    setCarImageFile(null);
-    setCarImagePreview("");
-    setCarImageError("");
     onClose();
   };
 
@@ -121,84 +112,55 @@ const SellCarModel = ({ isOpen, onClose }) => {
     form.mileage &&
     form.fuelType &&
     form.transmission &&
-    form.price &&
-    carImageFile;
-
-  const onCarImageUpload = (event) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      setCarImageError("Please upload a valid image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setCarImageError("Image size must be under 5MB");
-      return;
-    }
-
-    if (carImagePreview) {
-      URL.revokeObjectURL(carImagePreview);
-    }
-    setCarImageFile(file);
-    setCarImageError("");
-    setCarImagePreview(URL.createObjectURL(file));
-  };
-
-  const removeCarImage = () => {
-    if (carImagePreview) {
-      URL.revokeObjectURL(carImagePreview);
-    }
-    setCarImageFile(null);
-    setCarImagePreview("");
-    setCarImageError("");
-  };
+    form.price;
 
   const submitListing = async () => {
     if (!canSubmit || submitting) {
       return;
     }
 
-    setSubmitting(true);
-
-    const payload = new FormData();
-    payload.append("brand", form.brand);
-    payload.append("model", form.model);
-    payload.append("city", form.city);
-    payload.append("year", String(Number(form.year)));
-    payload.append("owner", form.owner);
-    payload.append(
-      "mileage",
-      String(Number((form.mileage.match(/\d[\d,]*/)?.[0] || "0").replace(/,/g, "")))
-    );
-    payload.append("fuelType", form.fuelType);
-    payload.append("transmission", form.transmission);
-    payload.append("price", String(Number(form.price)));
-    payload.append(
-      "description",
-      form.description ||
-        `${form.brand} ${form.model} in ${form.city}, ${form.owner}, approx ${form.mileage}`
-    );
-
-    if (carImageFile) {
-      payload.append("image", carImageFile);
-      payload.append("carImage", carImageFile);
+    const parsedYear = Number(form.year);
+    if (!Number.isFinite(parsedYear) || parsedYear <= 0) {
+      toast.error("Year must be a valid number");
+      return;
     }
 
+    const parsedPrice = Number(form.price);
+    if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
+      toast.error("Price must be greater than 0");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const payload = {
+      brand: form.brand,
+      model: form.model,
+      city: form.city,
+      year: String(parsedYear),
+      owner: form.owner,
+      mileage: form.mileage,
+      fuelType: form.fuelType,
+      transmission: form.transmission,
+      price: String(parsedPrice),
+      description:
+        form.description ||
+        `${form.brand} ${form.model} in ${form.city}, ${form.owner}, approx ${form.mileage}`,
+    };
+
     try {
-      await axios.post("http://localhost:4444/car/add", payload, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      toast.success("Car listed successfully");
+      const response = await sellCarApi(payload);
+      toast.success(response?.message || "Car listed successfully");
+      if (typeof onSuccess === "function") {
+        onSuccess();
+      }
       closeAndReset();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to submit car");
+      if (err.response?.status === 400 && err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error(err.response?.data?.message || "Failed to submit car");
+      }
       setSubmitting(false);
     }
   };
@@ -266,36 +228,6 @@ const SellCarModel = ({ isOpen, onClose }) => {
             className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-cyan-400"
             rows={4}
           />
-          <div className="rounded-xl border border-slate-200 p-3">
-            <label className="block text-sm font-semibold text-slate-800 mb-2">
-              Upload car photo
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onCarImageUpload}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-            />
-            {carImagePreview ? (
-              <div className="mt-3">
-                <img
-                  src={carImagePreview}
-                  alt="Car preview"
-                  className="h-36 w-full max-w-sm rounded-lg object-cover border border-slate-200"
-                />
-                <button
-                  type="button"
-                  onClick={removeCarImage}
-                  className="mt-2 text-xs font-semibold text-rose-600 hover:text-rose-700"
-                >
-                  Remove image
-                </button>
-              </div>
-            ) : null}
-            {carImageError ? (
-              <p className="mt-2 text-xs text-rose-600">{carImageError}</p>
-            ) : null}
-          </div>
           <button
             type="button"
             onClick={submitListing}
@@ -304,9 +236,6 @@ const SellCarModel = ({ isOpen, onClose }) => {
           >
             {submitting ? "Submitting..." : "Submit Listing"}
           </button>
-          {!carImageFile ? (
-            <p className="text-xs text-slate-500">Please upload at least one car image to submit.</p>
-          ) : null}
         </div>
       );
     }
