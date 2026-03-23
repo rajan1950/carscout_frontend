@@ -47,7 +47,7 @@ const options = {
 };
 
 const modelByBrand = {
-  "Maruti Suzuki": ["Swift", "Baleno", "Brezza", "Dzire"],
+  MarutiSuzuki: ["Swift", "Baleno", "Brezza", "Dzire"],
   Hyundai: ["i20", "Creta", "Venue", "Verna"],
   Honda: ["City", "Amaze", "Elevate"],
   Tata: ["Nexon", "Harrier", "Altroz", "Punch"],
