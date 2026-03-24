@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import axios from 'axios'
@@ -134,9 +134,6 @@ const submitHandler = async (data) => {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-slate-300">Password</label>
-                <a href="#" className="text-xs text-blue-400 hover:text-blue-300 transition">
-                  Forgot?
-                </a>
               </div>
               <div className="relative">
                 <input
@@ -165,6 +162,13 @@ const submitHandler = async (data) => {
               {errors.password && (
                 <p className="text-red-400 text-sm mt-1.5">{errors.password.message}</p>
               )}
+
+              <p className="text-center mt-4 text-slate-400 text-sm">
+                {' '}
+                <Link to="/forgotpassword" className="text-blue-500 hover:underline">
+                  FORGOT PASSWORD
+                </Link>
+              </p>
             </div>
 
             {/* Remember Me */}
