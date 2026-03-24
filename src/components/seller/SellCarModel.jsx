@@ -15,6 +15,7 @@ const initialForm = {
   transmission: "",
   price: "",
   description: "",
+  imageFile: null,
 };
 
 const stepConfig = [
@@ -112,7 +113,8 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
     form.mileage &&
     form.fuelType &&
     form.transmission &&
-    form.price;
+    form.price &&
+    form.imageFile;
 
   const submitListing = async () => {
     if (!canSubmit || submitting) {
@@ -133,20 +135,22 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
 
     setSubmitting(true);
 
-    const payload = {
-      brand: form.brand,
-      model: form.model,
-      city: form.city,
-      year: String(parsedYear),
-      owner: form.owner,
-      mileage: form.mileage,
-      fuelType: form.fuelType,
-      transmission: form.transmission,
-      price: String(parsedPrice),
-      description:
-        form.description ||
-        `${form.brand} ${form.model} in ${form.city}, ${form.owner}, approx ${form.mileage}`,
-    };
+    const payload = new FormData();
+    payload.append("brand", form.brand);
+    payload.append("model", form.model);
+    payload.append("city", form.city);
+    payload.append("year", String(parsedYear));
+    payload.append("owner", form.owner);
+    payload.append("mileage", form.mileage);
+    payload.append("fuelType", form.fuelType);
+    payload.append("transmission", form.transmission);
+    payload.append("price", String(parsedPrice));
+    payload.append(
+      "description",
+      form.description ||
+        `${form.brand} ${form.model} in ${form.city}, ${form.owner}, approx ${form.mileage}`
+    );
+    payload.append("image", form.imageFile);
 
     try {
       const response = await sellCarApi(payload);
@@ -214,6 +218,22 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
     if (selectedStep.key === "price") {
       return (
         <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Car image</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setForm((prev) => ({ ...prev, imageFile: file }));
+              }}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-cyan-400"
+            />
+            {form.imageFile && (
+              <p className="mt-1 text-xs text-slate-500">Selected: {form.imageFile.name}</p>
+            )}
+          </div>
+
           <input
             type="number"
             value={form.price}
