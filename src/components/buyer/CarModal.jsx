@@ -1,12 +1,27 @@
+import { resolveCarImageUrl } from "../../utils/carImage";
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80";
+
 export const CarModal = ({ selectedCar, onClose, formatPrice }) => {
   if (!selectedCar) {
     return null;
   }
 
+  const imageUrl = resolveCarImageUrl(selectedCar.image) || FALLBACK_IMAGE;
+
   return (
     <div className="fixed inset-0 z-40 bg-black/50 p-4 flex items-center justify-center" onClick={onClose}>
       <div className="w-full max-w-2xl rounded-2xl bg-white border border-slate-200 p-6" onClick={(event) => event.stopPropagation()}>
-        <h3 className="text-2xl font-black text-slate-900">{selectedCar.brand} {selectedCar.model}</h3>
+        <img
+          src={imageUrl}
+          alt={`${selectedCar.brand || "Car"} ${selectedCar.model || ""}`}
+          className="h-56 w-full object-cover rounded-xl border border-slate-200"
+          onError={(event) => {
+            event.currentTarget.src = FALLBACK_IMAGE;
+          }}
+        />
+        <h3 className="text-2xl font-black text-slate-900 mt-4">{selectedCar.brand} {selectedCar.model}</h3>
         <p className="text-slate-600 mt-2">{selectedCar.description || "No detailed description available."}</p>
         <div className="grid sm:grid-cols-2 gap-3 mt-4">
           <p className="rounded-lg bg-slate-50 p-3 text-sm"><span className="font-semibold">Year:</span> {selectedCar.year || "N/A"}</p>
