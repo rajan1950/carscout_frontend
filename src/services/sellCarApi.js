@@ -16,9 +16,11 @@ const getAuthHeaders = () => {
 };
 
 export const sellCarApi = async (payload) => {
+  const isFormData = payload instanceof FormData;
+
   const response = await axios.post(SELL_CAR_URL, payload, {
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...getAuthHeaders(),
     },
   });
