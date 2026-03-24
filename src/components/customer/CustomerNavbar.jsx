@@ -31,6 +31,9 @@ export const CustomerNavbar = () => {
           </div>
 
           <div className="flex items-center gap-2 ">
+            <NavLink to="/" className={(args) => `${navStyle(args)} ${navBase}`}>
+              Home
+            </NavLink>
             <NavLink to="/notifications" className={(args) => `${navStyle(args)} ${navBase}`}>
               Notifications
             </NavLink>
