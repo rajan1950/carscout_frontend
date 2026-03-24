@@ -8,11 +8,15 @@ const CAR_BASE_URL = "http://localhost:4444/car";
 const initialForm = {
   brand: "",
   model: "",
+  city: "",
   year: "",
+  owner: "",
   price: "",
   mileage: "",
   fuelType: "",
   transmission: "",
+  description: "",
+  imageFile: null,
 };
 
 export const AdminCars = () => {
@@ -79,11 +83,14 @@ export const AdminCars = () => {
     const payload = {
       brand: form.brand,
       model: form.model,
+        city: form.city,
       year: form.year ? Number(form.year) : undefined,
+        owner: form.owner,
       price: form.price ? Number(form.price) : undefined,
-      mileage: form.mileage ? Number(form.mileage) : undefined,
+        mileage: form.mileage,
       fuelType: form.fuelType,
       transmission: form.transmission,
+        description: form.description,
     };
 
     setSubmitting(true);
@@ -100,7 +107,17 @@ export const AdminCars = () => {
         }
         toast.success("Car updated");
       } else {
-        const res = await axios.post(`${CAR_BASE_URL}/add`, payload);
+        const formData = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+        if (form.imageFile) {
+          formData.append("image", form.imageFile);
+        }
+
+        const res = await axios.post(`${CAR_BASE_URL}/add`, formData);
         const createdCar = res.data?.data;
         if (createdCar?._id) {
           setCars((prev) => [createdCar, ...prev]);
@@ -124,11 +141,15 @@ export const AdminCars = () => {
     setForm({
       brand: car.brand || "",
       model: car.model || "",
+      city: car.city || "",
       year: car.year || "",
+      owner: car.owner || "",
       price: car.price || "",
       mileage: car.mileage || "",
       fuelType: car.fuelType || "",
       transmission: car.transmission || "",
+      description: car.description || "",
+      imageFile: null,
     });
     setIsModalOpen(true);
   };
@@ -270,11 +291,28 @@ export const AdminCars = () => {
                 className="border border-gray-300 rounded-xl px-3 py-2"
               />
               <input
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                placeholder="City"
+                required
+                className="border border-gray-300 rounded-xl px-3 py-2"
+              />
+              <input
                 type="number"
                 name="year"
                 value={form.year}
                 onChange={handleChange}
                 placeholder="Year"
+                required
+                className="border border-gray-300 rounded-xl px-3 py-2"
+              />
+              <input
+                name="owner"
+                value={form.owner}
+                onChange={handleChange}
+                placeholder="Owner (e.g. 1st owner)"
+                required
                 className="border border-gray-300 rounded-xl px-3 py-2"
               />
               <input
@@ -283,14 +321,15 @@ export const AdminCars = () => {
                 value={form.price}
                 onChange={handleChange}
                 placeholder="Price"
+                required
                 className="border border-gray-300 rounded-xl px-3 py-2"
               />
               <input
-                type="number"
                 name="mileage"
                 value={form.mileage}
                 onChange={handleChange}
                 placeholder="Mileage"
+                required
                 className="border border-gray-300 rounded-xl px-3 py-2"
               />
               <input
@@ -298,6 +337,7 @@ export const AdminCars = () => {
                 value={form.fuelType}
                 onChange={handleChange}
                 placeholder="Fuel type"
+                required
                 className="border border-gray-300 rounded-xl px-3 py-2"
               />
               <input
@@ -305,8 +345,31 @@ export const AdminCars = () => {
                 value={form.transmission}
                 onChange={handleChange}
                 placeholder="Transmission"
+                required
+                className="border border-gray-300 rounded-xl px-3 py-2"
+              />
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Description"
+                rows={3}
                 className="border border-gray-300 rounded-xl px-3 py-2 md:col-span-2"
               />
+              {!editingCarId && (
+                <div className="md:col-span-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] || null;
+                      setForm((prev) => ({ ...prev, imageFile: file }));
+                    }}
+                    required={!editingCarId}
+                    className="border border-gray-300 rounded-xl px-3 py-2 w-full"
+                  />
+                </div>
+              )}
 
               <div className="md:col-span-2 flex justify-end gap-2 pt-2">
                 <button
