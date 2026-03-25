@@ -21,6 +21,7 @@ import axios from "axios";
 import UserNavbar from "../../components/UserNavbar";
 import { isAdminAuthenticated } from "../../utils/auth";
 import SellCarModel from "../../components/seller/SellCarModel";
+import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
 
 const Home = () => {
   const canOpenAdminPanel = isAdminAuthenticated();
@@ -415,9 +416,13 @@ const Home = () => {
                 className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden"
               >
                 <img
-                  src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80"
+                  src={resolveCarImageFromCar(car) || CAR_IMAGE_FALLBACK}
                   alt={`${car.brand || "Car"} ${car.model || ""}`}
                   className="h-48 w-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = CAR_IMAGE_FALLBACK;
+                  }}
                 />
 
                 <div className="p-4">
