@@ -1,14 +1,11 @@
-import { resolveCarImageUrl } from "../../utils/carImage";
-
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80";
+import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
 
 export const CarModal = ({ selectedCar, onClose, formatPrice }) => {
   if (!selectedCar) {
     return null;
   }
 
-  const imageUrl = resolveCarImageUrl(selectedCar.image) || FALLBACK_IMAGE;
+  const imageUrl = resolveCarImageFromCar(selectedCar) || CAR_IMAGE_FALLBACK;
 
   return (
     <div className="fixed inset-0 z-40 bg-black/50 p-4 flex items-center justify-center" onClick={onClose}>
@@ -18,7 +15,8 @@ export const CarModal = ({ selectedCar, onClose, formatPrice }) => {
           alt={`${selectedCar.brand || "Car"} ${selectedCar.model || ""}`}
           className="h-56 w-full object-cover rounded-xl border border-slate-200"
           onError={(event) => {
-            event.currentTarget.src = FALLBACK_IMAGE;
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = CAR_IMAGE_FALLBACK;
           }}
         />
         <h3 className="text-2xl font-black text-slate-900 mt-4">{selectedCar.brand} {selectedCar.model}</h3>
