@@ -4,17 +4,9 @@ import {
   FaSearch,
   FaArrowRight,
   FaCheckCircle,
-  FaCarSide,
-  FaUsers,
-  FaEnvelope,
-  FaStar,
-  FaTools,
-  FaClipboardCheck,
   FaBolt,
   FaGasPump,
   FaRoad,
-  FaHandshake,
-  FaMoneyBillWave,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -34,23 +26,18 @@ const Home = () => {
   const [savedCars, setSavedCars] = useState([]);
   const [isSellWizardOpen, setIsSellWizardOpen] = useState(false);
   const [platformStats, setPlatformStats] = useState({
-    users: 0,
     cars: 0,
     inquiries: 0,
-    messages: 0,
-    reviews: 0,
     testDrives: 0,
   });
 
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const [carsRes, summaryRes, messageRes, reviewRes, testDriveRes] =
+        const [carsRes, summaryRes, testDriveRes] =
           await Promise.allSettled([
             axios.get("http://localhost:4444/car/all"),
             axios.get("http://localhost:4444/admin/dashboard"),
-            axios.get("http://localhost:4444/message/all"),
-            axios.get("http://localhost:4444/reviews/all"),
             axios.get("http://localhost:4444/testdrive/all"),
           ]);
 
@@ -63,27 +50,14 @@ const Home = () => {
         const summaryData =
           summaryRes.status === "fulfilled" ? summaryRes.value.data : {};
 
-        const messages =
-          messageRes.status === "fulfilled" && Array.isArray(messageRes.value.data)
-            ? messageRes.value.data.length
-            : 0;
-
-        const reviews =
-          reviewRes.status === "fulfilled" && Array.isArray(reviewRes.value.data)
-            ? reviewRes.value.data.length
-            : 0;
-
         const testDrives =
           testDriveRes.status === "fulfilled" && Array.isArray(testDriveRes.value.data)
             ? testDriveRes.value.data.length
             : 0;
 
         setPlatformStats({
-          users: summaryData.users || 0,
           cars: summaryData.cars || 0,
           inquiries: summaryData.inquiries || 0,
-          messages,
-          reviews,
           testDrives,
         });
       } catch (err) {
@@ -331,75 +305,6 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 pb-10">
-        <div className="rounded-3xl bg-white border border-slate-200 shadow p-6">
-          <h2 className="text-2xl font-black text-slate-900 mb-4">Platform Functionality Snapshot</h2>
-          <p className="text-slate-600 mb-6">
-            Home is now aligned with admin panel capabilities so users can understand the full system flow.
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-            <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 text-center">
-              <p className="text-xs uppercase text-blue-700 font-semibold">Users</p>
-              <p className="text-2xl font-black text-blue-900">{platformStats.users}</p>
-            </div>
-            <div className="rounded-xl bg-green-50 border border-green-100 p-4 text-center">
-              <p className="text-xs uppercase text-green-700 font-semibold">Cars</p>
-              <p className="text-2xl font-black text-green-900">{platformStats.cars}</p>
-            </div>
-            <div className="rounded-xl bg-cyan-50 border border-cyan-100 p-4 text-center">
-              <p className="text-xs uppercase text-cyan-700 font-semibold">Inquiries</p>
-              <p className="text-2xl font-black text-cyan-900">{platformStats.inquiries}</p>
-            </div>
-            <div className="rounded-xl bg-indigo-50 border border-indigo-100 p-4 text-center">
-              <p className="text-xs uppercase text-indigo-700 font-semibold">Messages</p>
-              <p className="text-2xl font-black text-indigo-900">{platformStats.messages}</p>
-            </div>
-            <div className="rounded-xl bg-amber-50 border border-amber-100 p-4 text-center">
-              <p className="text-xs uppercase text-amber-700 font-semibold">Reviews</p>
-              <p className="text-2xl font-black text-amber-900">{platformStats.reviews}</p>
-            </div>
-            <div className="rounded-xl bg-rose-50 border border-rose-100 p-4 text-center">
-              <p className="text-xs uppercase text-rose-700 font-semibold">Test Drives</p>
-              <p className="text-2xl font-black text-rose-900">{platformStats.testDrives}</p>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-              <FaUsers className="text-blue-600 mb-2" />
-              <h3 className="font-bold">User and Role Control</h3>
-              <p className="text-sm text-slate-600 mt-1">Admin manages buyers, sellers, and statuses in one dashboard.</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-              <FaEnvelope className="text-indigo-600 mb-2" />
-              <h3 className="font-bold">Inquiry and Messaging</h3>
-              <p className="text-sm text-slate-600 mt-1">User communication is tracked through inquiry and message modules.</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-              <FaStar className="text-amber-500 mb-2" />
-              <h3 className="font-bold">Reviews and Trust</h3>
-              <p className="text-sm text-slate-600 mt-1">Rating and comments help buyers choose with confidence.</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-              <FaClipboardCheck className="text-rose-600 mb-2" />
-              <h3 className="font-bold">Test Drive Scheduling</h3>
-              <p className="text-sm text-slate-600 mt-1">Bookings are managed with date, location, and status workflow.</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-              <FaTools className="text-slate-700 mb-2" />
-              <h3 className="font-bold">Configurable Settings</h3>
-              <p className="text-sm text-slate-600 mt-1">Admin settings control dashboard experience and defaults.</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-              <FaCarSide className="text-cyan-700 mb-2" />
-              <h3 className="font-bold">Inventory Operations</h3>
-              <p className="text-sm text-slate-600 mt-1">Cars can be created, updated, filtered, and showcased quickly.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section id="featured-cars" className="max-w-7xl mx-auto px-6 py-16">
 
         <h2 className="text-3xl font-black text-center mb-12 text-slate-900">Featured Cars To Buy</h2>
@@ -468,26 +373,6 @@ const Home = () => {
         {!loading && !error && visibleCars.length === 0 && (
           <p className="text-center text-slate-500">No matching cars found. Try another search.</p>
         )}
-      </section>
-
-      <section className="max-w-7xl mx-auto px-6 pb-16">
-        <div className="grid lg:grid-cols-3 gap-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <FaHandshake className="text-2xl text-emerald-600 mb-3" />
-            <h3 className="font-bold text-lg">Buy Flow</h3>
-            <p className="text-sm text-slate-600 mt-1">Search inventory, shortlist cars, and move into buyer routes in one click.</p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <FaMoneyBillWave className="text-2xl text-amber-600 mb-3" />
-            <h3 className="font-bold text-lg">Sell Flow</h3>
-            <p className="text-sm text-slate-600 mt-1">Create listing details, set your price, and start receiving inquiry signals fast.</p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <FaCarSide className="text-2xl text-slate-700 mb-3" />
-            <h3 className="font-bold text-lg">Operations</h3>
-            <p className="text-sm text-slate-600 mt-1">Manage cars, messages, reviews, and test drives with admin-enabled oversight.</p>
-          </div>
-        </div>
       </section>
 
       <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-800 text-white py-16 text-center">
