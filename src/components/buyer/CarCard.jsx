@@ -1,8 +1,5 @@
 import { FaGasPump, FaRoad } from "react-icons/fa";
-import { resolveCarImageUrl } from "../../utils/carImage";
-
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80";
+import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
 
 export const CarCard = ({
   car,
@@ -16,7 +13,7 @@ export const CarCard = ({
   onOpenReview,
   formatPrice,
 }) => {
-  const imageUrl = resolveCarImageUrl(car.image) || FALLBACK_IMAGE;
+  const imageUrl = resolveCarImageFromCar(car) || CAR_IMAGE_FALLBACK;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -25,7 +22,8 @@ export const CarCard = ({
         alt={`${car.brand || "Car"} ${car.model || ""}`}
         className="h-44 w-full object-cover"
         onError={(event) => {
-          event.currentTarget.src = FALLBACK_IMAGE;
+          event.currentTarget.onerror = null;
+          event.currentTarget.src = CAR_IMAGE_FALLBACK;
         }}
       />
       <div className="p-4">
