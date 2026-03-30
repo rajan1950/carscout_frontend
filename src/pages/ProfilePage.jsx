@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import UserNavbar from "../components/UserNavbar";
+import UserNavbar from "../layouts/UserNavbar";
 import { getAuthProfile, isAuthenticated, updateAuthProfile } from "../utils/auth";
 
 const createForm = (profile = {}) => ({
