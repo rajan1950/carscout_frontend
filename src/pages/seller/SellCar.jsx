@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import SellCarModel from "../../components/seller/SellCarModel";
-import UserNavbar from "../../components/UserNavbar";
+import UserNavbar from "../../layouts/UserNavbar";
 
 const SellCar = () => {
   const navigate = useNavigate();
