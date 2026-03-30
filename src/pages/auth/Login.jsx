@@ -1,0 +1,354 @@
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { toast } from 'react-toastify'
+import axios from 'axios'
+import { normalizeRole, saveAuthSession } from '../../utils/auth'
+
+const MAX_FAILED_ATTEMPTS = 5
+const LOCK_TIME_MS = 5 * 60 * 1000
+const LOGIN_LIMITER_STORAGE_KEY = 'carscout_login_limiter'
+
+const getLimiterFromStorage = () => {
+  try {
+    const raw = localStorage.getItem(LOGIN_LIMITER_STORAGE_KEY)
+    if (!raw) {
+      return { failedAttempts: 0, lockedUntil: null }
+    }
+
+    const parsed = JSON.parse(raw)
+    const failedAttempts = Number(parsed.failedAttempts) || 0
+    const lockedUntil = parsed.lockedUntil ? Number(parsed.lockedUntil) : null
+
+    if (lockedUntil && lockedUntil <= Date.now()) {
+      return { failedAttempts: 0, lockedUntil: null }
+    }
+
+    return { failedAttempts, lockedUntil }
+  } catch {
+    return { failedAttempts: 0, lockedUntil: null }
+  }
+}
+
+const saveLimiterToStorage = (data) => {
+  localStorage.setItem(LOGIN_LIMITER_STORAGE_KEY, JSON.stringify(data))
+}
+
+const formatTimer = (seconds) => {
+  const minutes = String(Math.floor(seconds / 60)).padStart(2, '0')
+  const remainingSeconds = String(seconds % 60).padStart(2, '0')
+  return `${minutes}:${remainingSeconds}`
+}
+
+export const Login = () => {
+  const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [limiter, setLimiter] = useState(getLimiterFromStorage)
+  const [countdown, setCountdown] = useState(0)
+  const [lockMessage, setLockMessage] = useState('')
+
+  const isLocked = Boolean(limiter.lockedUntil && limiter.lockedUntil > Date.now())
+  const attemptsLeft = Math.max(0, MAX_FAILED_ATTEMPTS - limiter.failedAttempts)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      email: '',
+      password: ''
+    },
+    mode: 'onBlur'
+  })
+
+  useEffect(() => {
+    if (!limiter.lockedUntil) {
+      setCountdown(0)
+      return undefined
+    }
+
+    const updateCountdown = () => {
+      const secondsLeft = Math.max(0, Math.ceil((limiter.lockedUntil - Date.now()) / 1000))
+      setCountdown(secondsLeft)
+
+      if (secondsLeft === 0) {
+        const resetState = { failedAttempts: 0, lockedUntil: null }
+        setLimiter(resetState)
+        saveLimiterToStorage(resetState)
+        setLockMessage('')
+      }
+    }
+
+    updateCountdown()
+    const intervalId = setInterval(updateCountdown, 1000)
+
+    return () => clearInterval(intervalId)
+  }, [limiter.lockedUntil])
+
+  const handleFailedAttempt = () => {
+    const nextFailedAttempts = limiter.failedAttempts + 1
+
+    if (nextFailedAttempts >= MAX_FAILED_ATTEMPTS) {
+      const nextState = {
+        failedAttempts: MAX_FAILED_ATTEMPTS,
+        lockedUntil: Date.now() + LOCK_TIME_MS,
+      }
+
+      setLimiter(nextState)
+      saveLimiterToStorage(nextState)
+      setLockMessage('Too many failed attempts. Please try again after 5 minutes.')
+      return
+    }
+
+    const nextState = { failedAttempts: nextFailedAttempts, lockedUntil: null }
+    setLimiter(nextState)
+    saveLimiterToStorage(nextState)
+    setLockMessage('')
+    toast.error(`Invalid credentials. ${MAX_FAILED_ATTEMPTS - nextFailedAttempts} attempts left.`)
+  }
+
+  const resetLimiter = () => {
+    const resetState = { failedAttempts: 0, lockedUntil: null }
+    setLimiter(resetState)
+    saveLimiterToStorage(resetState)
+    setLockMessage('')
+  }
+
+const submitHandler = async (data) => {
+  if (isLocked) {
+    setLockMessage('Too many failed attempts. Please try again after 5 minutes.')
+    return
+  }
+
+  setIsLoading(true)
+  try {
+
+    const res = await axios.post("http://localhost:4444/user/login", data)
+
+    console.log("response...", res.data)
+
+    if (res.status === 200) {
+
+      toast.success("Login successful!")
+      resetLimiter()
+
+      const rawUser =
+        res.data.user ||
+        res.data.profile ||
+        res.data.data?.user ||
+        res.data.data ||
+        {}
+
+      const role = normalizeRole(res.data.role || rawUser.role)
+      const fallbackName = String(data.email || "").split("@")[0] || "User"
+
+      const safeUser = {
+        ...rawUser,
+        name:
+          rawUser.name ||
+          rawUser.fullName ||
+          rawUser.username ||
+          rawUser.firstName ||
+          fallbackName,
+        email: rawUser.email || data.email,
+        profileImage:
+          rawUser.profileImage ||
+          rawUser.profilePicture ||
+          rawUser.avatar ||
+          rawUser.photo ||
+          "",
+      }
+
+      saveAuthSession({
+        role,
+        token: res.data.token || res.data.accessToken || res.data.jwt,
+        user: safeUser,
+      })
+
+      if (role === "admin") {
+        navigate("/adminpanel")
+      }
+      else if (role === "seller" || role === "buyer" || role === "user") {
+        navigate("/")
+      }
+      else {
+        toast.error("Invalid Role")
+        navigate("/login")
+      }
+
+    }
+
+  } catch (error) {
+
+    console.log("login error...", error)
+    handleFailedAttempt()
+
+  } finally {
+    setIsLoading(false)
+
+  }
+}
+
+  return (
+    <div className="min-h-screen from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-8">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-2000"></div>
+      </div>
+
+      {/* Login Card */}
+      <div className="relative w-full max-w-md">
+        <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 backdrop-blur-sm">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+            <p className="text-slate-400">Sign in to your Car Scout account</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(submitHandler)} className="space-y-5">
+            {/* Email Field */}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  {...register('email', {
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Invalid email address'
+                    }
+                  })}
+                  className={`w-full px-4 py-3 rounded-lg bg-slate-700 border transition-all focus:outline-none text-white placeholder-slate-500 ${errors.email
+                    ? 'border-red-500 focus:border-red-500 focus:bg-slate-700'
+                    : 'border-slate-600 focus:border-blue-500 focus:bg-slate-700'
+                    }`}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-red-400 text-sm mt-1.5">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-slate-300">Password</label>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  {...register('password', {
+                    required: 'Password is required',
+                    minLength: {
+                      value: 6,
+                      message: 'Password must be at least 6 characters'
+                    }
+                  })}
+                  className={`w-full px-4 py-3 rounded-lg bg-slate-700 border transition-all focus:outline-none text-white placeholder-slate-500 ${errors.password
+                    ? 'border-red-500 focus:border-red-500 focus:bg-slate-700'
+                    : 'border-slate-600 focus:border-blue-500 focus:bg-slate-700'
+                    }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-300 transition"
+                >
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-red-400 text-sm mt-1.5">{errors.password.message}</p>
+              )}
+
+              <p className="text-center mt-4 text-slate-400 text-sm">
+                {' '}
+                <Link to="/forgotpassword" className="text-blue-500 hover:underline">
+                  FORGOT PASSWORD
+                </Link>
+              </p>
+            </div>
+
+            {/* Remember Me */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                className="w-4 h-4 rounded bg-slate-700 border-slate-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              />
+              <label htmlFor="remember" className="ml-2 text-sm text-slate-400 cursor-pointer">
+                Remember me
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLocked || isLoading}
+              className="w-full from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+            >
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </button>
+
+            {isLocked && (
+              <p className="rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+                Too many failed attempts. Please try again after 5 minutes.
+              </p>
+            )}
+
+            {isLocked && (
+              <p className="text-center text-sm text-amber-300">
+                Try again in {formatTimer(countdown)}
+              </p>
+            )}
+
+            {!isLocked && limiter.failedAttempts > 0 && (
+              <p className="text-center text-sm text-amber-300">
+                {attemptsLeft} attempts left
+              </p>
+            )}
+
+            {lockMessage && isLocked && (
+              <p className="text-center text-xs text-red-300">
+                {lockMessage}
+              </p>
+            )}
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-slate-800 text-slate-400">or</span>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <p className="text-center text-slate-400 text-sm">
+            Don't have an account?
+            <button
+              onClick={() => navigate('/signup')}
+              className="text-blue-400 hover:text-blue-300 font-medium ml-1 transition"
+            >
+              Create one
+            </button>
+          </p>
+        </div>
+
+        {/* Security Info */}
+        <p className="text-center text-slate-500 text-xs mt-4">
+          🔒 Your data is secure and encrypted
+        </p>
+      </div>
+    </div>
+  )
+}
