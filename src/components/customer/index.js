@@ -1,4 +1,4 @@
-import { CustomerNavbar } from "./CustomerNavbar";
+import { CustomerNavbar } from "../../layouts/CustomerNavbar";
 import { CustomerHome } from "./CustomerHome";
 
 
