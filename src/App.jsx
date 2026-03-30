@@ -1,5 +1,5 @@
 import { Slide, ToastContainer } from "react-toastify"
-import AppRouter from "./router/AppRouter"
+import AppRouter from "./routes/AppRouter"
 import axios from "axios"
 import { NotificationProvider } from "./context/NotificationContext"
 
