@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import UserNavbar from "../../components/UserNavbar";
+import UserNavbar from "../../layouts/UserNavbar";
 import { isAdminAuthenticated } from "../../utils/auth";
 import SellCarModel from "../../components/seller/SellCarModel";
 import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
