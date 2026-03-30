@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaCheck, FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
-import UserNavbar from "../components/UserNavbar";
+import UserNavbar from "../layouts/UserNavbar";
 import { useNotifications } from "../hooks/useNotifications";
 
 const PAGE_LIMIT = 20;
