@@ -27,10 +27,10 @@ const Found404 = () => {
 
 					<div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
 						<p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quick help</p>
-						<p className="mt-2 text-sm text-slate-600">Go back to Home, Login, Sell Car, or your Admin Dashboard.</p>
+						<p className="mt-2 text-sm text-slate-600">Go back to Home, Login, or your Admin Dashboard.</p>
 					</div>
 
-					<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+					<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 						<Link
 							to="/"
 							className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
@@ -42,12 +42,6 @@ const Found404 = () => {
 							className="inline-flex items-center justify-center rounded-lg bg-cyan-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-500"
 						>
 							Go to Login
-						</Link>
-						<Link
-							to="/sellcar"
-							className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-400"
-						>
-							Sell Car
 						</Link>
 						<Link
 							to="/adminpanel"
