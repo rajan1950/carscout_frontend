@@ -10,7 +10,6 @@ import {
 
 const navItems = [
   { label: "Browse Cars", href: "#featured-cars", type: "anchor" },
-  { label: "Sell Car", to: "/sellcar", type: "route" },
   { label: "Login", to: "/login", type: "route" },
   { label: "Signup", to: "/signup", type: "route" },
   { label: "Admin", to: "/adminpanel", type: "route" },
