@@ -5,7 +5,10 @@ import { AdminCars } from "./AdminCars"
 import { AdminInquiries } from "./AdminInquiries"
 import { AdminMessages } from "./AdminMessages"
 import { AdminReviews } from "./AdminReviews"
+import { AdminReports } from "./AdminReports"
 import { AdminTestDrives } from "./AdminTestDrives"
+import { AdminWishlists } from "./AdminWishlists"
+import { AdminPurchases } from "./AdminPurchases"
 import { AdminSettings } from "./AdminSettings"
 import { AdminDefaultRoute } from "./AdminDefaultRoute"
 import { AdminRouteGuard } from "./AdminRouteGuard"
@@ -18,7 +21,10 @@ export {
          AdminInquiries,
          AdminMessages,
          AdminReviews,
+         AdminReports,
          AdminTestDrives,
+         AdminWishlists,
+         AdminPurchases,
          AdminSettings,
          AdminDefaultRoute,
          AdminRouteGuard,
