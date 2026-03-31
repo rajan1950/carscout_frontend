@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { ADMIN_SETTINGS_EVENT, readAdminSettings } from "./adminPanelSettings";
+import { getAllWishlistItemsApi } from "../../services/wishlistService";
+import { getAllPurchasesLocal } from "../../services/purchaseService";
 import {
   Bar,
   BarChart,
@@ -27,6 +29,8 @@ export const AdminDashboard = () => {
     messages: 0,
     reviews: 0,
     testDrives: 0,
+    wishlists: 0,
+    purchases: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,11 +43,12 @@ export const AdminDashboard = () => {
     setNotice("");
 
     try {
-      const [summaryRes, messageRes, reviewRes, testDriveRes] = await Promise.allSettled([
+      const [summaryRes, messageRes, reviewRes, testDriveRes, wishlistRes] = await Promise.allSettled([
         axios.get(`${ADMIN_BASE_URL}/dashboard`),
         axios.get(`${MESSAGE_BASE_URL}/all`),
         axios.get(`${REVIEW_BASE_URL}/all`),
         axios.get(`${TESTDRIVE_BASE_URL}/all`),
+        getAllWishlistItemsApi(),
       ]);
 
       const summary =
@@ -66,6 +71,18 @@ export const AdminDashboard = () => {
           ? testDriveRes.value.data.length
           : 0;
 
+      const wishlistItems =
+        wishlistRes.status === "fulfilled"
+          ? Array.isArray(wishlistRes.value?.data)
+            ? wishlistRes.value.data
+            : Array.isArray(wishlistRes.value)
+              ? wishlistRes.value
+              : []
+          : [];
+
+      const wishlists = wishlistItems.length;
+      const purchases = getAllPurchasesLocal().length;
+
       setStats({
         users: summary.users || 0,
         cars: summary.cars || 0,
@@ -73,6 +90,8 @@ export const AdminDashboard = () => {
         messages,
         reviews,
         testDrives,
+        wishlists,
+        purchases,
       });
 
       const failedSources = [
@@ -80,6 +99,7 @@ export const AdminDashboard = () => {
         messageRes.status !== "fulfilled" ? "Messages" : null,
         reviewRes.status !== "fulfilled" ? "Reviews" : null,
         testDriveRes.status !== "fulfilled" ? "Test Drives" : null,
+        wishlistRes.status !== "fulfilled" ? "Wishlists" : null,
       ].filter(Boolean);
 
       if (failedSources.length > 0) {
@@ -119,6 +139,8 @@ export const AdminDashboard = () => {
     { label: "Messages", value: stats.messages, color: "#4f46e5" },
     { label: "Reviews", value: stats.reviews, color: "#d97706" },
     { label: "Test Drives", value: stats.testDrives, color: "#e11d48" },
+    { label: "Wishlists", value: stats.wishlists, color: "#0f766e" },
+    { label: "Purchases", value: stats.purchases, color: "#1d4ed8" },
   ];
 
   const pieData = chartData.filter((item) => item.value > 0);
@@ -130,6 +152,8 @@ export const AdminDashboard = () => {
     Messages: "messages",
     Reviews: "reviews",
     "Test Drives": "testdrives",
+    Wishlists: "wishlists",
+    Purchases: "purchases",
   };
 
   const busiest = [...chartData].sort((a, b) => b.value - a.value)[0];
@@ -206,6 +230,16 @@ export const AdminDashboard = () => {
           <p className="text-sm text-gray-500">Total Test Drives</p>
           <p className="text-3xl font-bold text-rose-700 mt-2">{stats.testDrives}</p>
         </div>
+
+        <div className="bg-white rounded-xl shadow p-5 border border-gray-100">
+          <p className="text-sm text-gray-500">Total Wishlists</p>
+          <p className="text-3xl font-bold text-teal-700 mt-2">{stats.wishlists}</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow p-5 border border-gray-100">
+          <p className="text-sm text-gray-500">Total Purchases</p>
+          <p className="text-3xl font-bold text-blue-700 mt-2">{stats.purchases}</p>
+        </div>
       </div>
 
       <div className="mt-8 bg-white rounded-xl shadow border border-gray-100 p-5">
@@ -232,6 +266,18 @@ export const AdminDashboard = () => {
               >
                 Test Drives
               </Link>
+              <Link
+                to="/adminpanel/wishlists"
+                className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Wishlists
+              </Link>
+              <Link
+                to="/adminpanel/purchases"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Purchases
+              </Link>
             </div>
           </div>
 
@@ -255,6 +301,12 @@ export const AdminDashboard = () => {
                 className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded text-sm"
               >
                 Reviews
+              </Link>
+              <Link
+                to="/adminpanel/reports"
+                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm"
+              >
+                Reports
               </Link>
             </div>
           </div>
