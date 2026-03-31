@@ -134,6 +134,8 @@ export const AdminSettings = () => {
             <option value="users">Users</option>
             <option value="cars">Cars</option>
             <option value="testdrives">Test Drives</option>
+            <option value="wishlists">Wishlists</option>
+            <option value="purchases">Purchases</option>
             <option value="inquiries">Inquiries</option>
             <option value="messages">Messages</option>
             <option value="reviews">Reviews</option>
