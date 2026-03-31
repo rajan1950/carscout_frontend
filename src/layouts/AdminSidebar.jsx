@@ -7,7 +7,10 @@ import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ReviewsIcon from '@mui/icons-material/Reviews';
+import ReportGmailerrorredIcon from '@mui/icons-material/ReportGmailerrorred';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { ADMIN_SETTINGS_EVENT, readAdminSettings } from "../components/admin/adminPanelSettings";
 import { clearAuthSession } from "../utils/auth";
@@ -28,6 +31,8 @@ export const AdminSidebar = () => {
         { to: "users", label: "Users", icon: GroupIcon },
         { to: "cars", label: "Cars", icon: DirectionsCarFilledIcon },
         { to: "testdrives", label: "Test Drives", icon: EventAvailableIcon },
+        { to: "wishlists", label: "Wishlists", icon: FavoriteBorderIcon },
+        { to: "purchases", label: "Purchases", icon: ReceiptLongIcon },
         { to: "settings", label: "Settings", icon: SettingsIcon },
       ],
     },
@@ -37,6 +42,7 @@ export const AdminSidebar = () => {
         { to: "inquiries", label: "Inquiries", icon: ContactSupportIcon },
         { to: "messages", label: "Messages", icon: MailOutlineIcon },
         { to: "reviews", label: "Reviews", icon: ReviewsIcon },
+        { to: "reports", label: "Reports", icon: ReportGmailerrorredIcon },
       ],
     },
   ];
