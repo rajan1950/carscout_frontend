@@ -1,4 +1,5 @@
 import { FaBalanceScale } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export const CompareSection = ({ compareList, onClear, formatPrice }) => {
   if (compareList.length === 0) {
@@ -18,6 +19,15 @@ export const CompareSection = ({ compareList, onClear, formatPrice }) => {
         >
           Clear Compare
         </button>
+      </div>
+
+      <div className="mb-3">
+        <Link
+          to="/customer/compare"
+          className="inline-flex items-center rounded-lg bg-cyan-700 hover:bg-cyan-800 text-white px-3 py-2 text-sm font-semibold"
+        >
+          Open AI Compare Page
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-3 gap-3">
