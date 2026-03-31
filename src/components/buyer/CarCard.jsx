@@ -6,11 +6,13 @@ export const CarCard = ({
   isFavorite,
   isCompared,
   onViewDetails,
+  onBuyNow,
   onToggleFavorite,
   onOpenInquiry,
   onOpenTestDrive,
   onToggleCompare,
   onOpenReview,
+  onOpenReport,
   formatPrice,
 }) => {
   const imageUrl = resolveCarImageFromCar(car) || CAR_IMAGE_FALLBACK;
@@ -44,6 +46,16 @@ export const CarCard = ({
           </button>
           <button
             type="button"
+            onClick={() => onBuyNow(car)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-2 text-sm font-semibold"
+          >
+            Buy Now
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <button
+            type="button"
             onClick={() => onToggleFavorite(car._id)}
             className={`rounded-lg py-2 text-sm font-semibold ${
               isFavorite
@@ -51,11 +63,22 @@ export const CarCard = ({
                 : "bg-rose-50 text-rose-700"
             }`}
           >
-            {isFavorite ? "Saved" : "Save"}
+            {isFavorite ? "Wishlisted" : "Wishlist"}
+          </button>
+          <button
+            type="button"
+            onClick={() => onToggleCompare(car)}
+            className={`rounded-lg py-2 text-sm font-semibold ${
+              isCompared
+                ? "bg-cyan-700 text-white"
+                : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            {isCompared ? "Added" : "Compare"}
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mt-2">
+        <div className="grid grid-cols-2 gap-2 mt-2">
           <button
             type="button"
             onClick={() => onOpenInquiry(car)}
@@ -70,26 +93,24 @@ export const CarCard = ({
           >
             Test Drive
           </button>
-          <button
-            type="button"
-            onClick={() => onToggleCompare(car)}
-            className={`rounded-lg py-2 text-xs font-semibold ${
-              isCompared
-                ? "bg-cyan-700 text-white"
-                : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            {isCompared ? "Added" : "Compare"}
-          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onOpenReview(car)}
-          className="w-full rounded-lg border border-amber-200 text-amber-700 py-2 text-xs font-semibold hover:bg-amber-50 mt-2"
-        >
-          Write Review
-        </button>
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => onOpenReview(car)}
+            className="rounded-lg border border-amber-200 text-amber-700 py-2 text-xs font-semibold hover:bg-amber-50"
+          >
+            Write Review
+          </button>
+          <button
+            type="button"
+            onClick={() => onOpenReport(car)}
+            className="rounded-lg border border-red-200 text-red-700 py-2 text-xs font-semibold hover:bg-red-50"
+          >
+            Report Car
+          </button>
+        </div>
       </div>
     </div>
   );
