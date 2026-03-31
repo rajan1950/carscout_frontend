@@ -23,7 +23,6 @@ const Home = () => {
   const [query, setQuery] = useState("");
   const [fuelFilter, setFuelFilter] = useState("all");
   const [priceSort, setPriceSort] = useState("default");
-  const [savedCars, setSavedCars] = useState([]);
   const [isSellWizardOpen, setIsSellWizardOpen] = useState(false);
   const [platformStats, setPlatformStats] = useState({
     cars: 0,
@@ -105,12 +104,6 @@ const Home = () => {
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(numeric);
-  };
-
-  const toggleSave = (carId) => {
-    setSavedCars((prev) =>
-      prev.includes(carId) ? prev.filter((id) => id !== carId) : [...prev, carId]
-    );
   };
 
   const featuredCars = visibleCars.slice(0, 9);
@@ -195,7 +188,7 @@ const Home = () => {
               <p className="text-xs uppercase tracking-wider text-slate-300">Deal Engine</p>
               <h3 className="text-lg font-bold">Buyer + Seller Functions In One Screen</h3>
               <p className="text-sm text-slate-200 mt-1">
-                Search, compare, save favorites, and instantly move into buy or sell journeys.
+                Search, compare, and instantly move into buy or sell journeys.
               </p>
             </div>
 
@@ -275,7 +268,7 @@ const Home = () => {
             <h3 className="font-black text-2xl text-slate-900 mb-4">Find The Right Car, Faster</h3>
             <div className="space-y-3 text-sm text-slate-700">
               <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Search by brand, model, fuel and price.</p>
-              <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Save shortlisted cars from featured inventory.</p>
+              <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Review featured inventory and open buyer dashboard.</p>
               <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Move directly into buyer flow and compare options.</p>
             </div>
             <Link
@@ -345,24 +338,13 @@ const Home = () => {
 
                   <p className="text-sm text-slate-600 mt-1">Mileage: {car.mileage || "N/A"} km</p>
 
-                  <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="mt-4">
                     <Link
                       to="/customer"
-                      className="text-center bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-semibold"
+                      className="inline-flex w-full items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition"
                     >
                       Buy Now
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => toggleSave(car._id)}
-                      className={`py-2 rounded-lg text-sm font-semibold ${
-                        savedCars.includes(car._id)
-                          ? "bg-slate-900 text-white"
-                          : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {savedCars.includes(car._id) ? "Saved" : "Save"}
-                    </button>
                   </div>
                 </div>
               </motion.div>
