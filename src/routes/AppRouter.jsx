@@ -13,6 +13,8 @@ import { ResetPassword } from "../pages/auth/ResetPassword";
 // ==============================
 import { CustomerNavbar } from "../layouts/CustomerNavbar";
 import { CustomerHome } from "../components/customer/CustomerHome";
+import { CompareInsightsPage } from "../components/buyer/CompareInsightsPage";
+import { BuyCarPage } from "../components/buyer/BuyCarPage";
 
 // ==============================
 // ADMIN COMPONENTS
@@ -24,7 +26,10 @@ import { AdminCars } from "../components/admin/AdminCars";
 import { AdminInquiries } from "../components/admin/AdminInquiries";
 import { AdminMessages } from "../components/admin/AdminMessages";
 import { AdminReviews } from "../components/admin/AdminReviews";
+import { AdminReports } from "../components/admin/AdminReports";
 import { AdminTestDrives } from "../components/admin/AdminTestDrives";
+import { AdminWishlists } from "../components/admin/AdminWishlists";
+import { AdminPurchases } from "../components/admin/AdminPurchases";
 import { AdminSettings } from "../components/admin/AdminSettings";
 import { AdminDefaultRoute } from "../components/admin/AdminDefaultRoute";
 import { AdminRouteGuard } from "../components/admin/AdminRouteGuard";
@@ -60,6 +65,8 @@ const router = createBrowserRouter([
       path:'/customer', element:<CustomerNavbar></CustomerNavbar>,
       children: [
          { index: true, element:<CustomerHome /> },
+         { path:'compare', element:<CompareInsightsPage /> },
+         { path:'buy/:carId', element:<BuyCarPage /> },
       ]
    },
    // Admin
@@ -77,7 +84,10 @@ const router = createBrowserRouter([
          { path:'inquiries', element:<AdminInquiries /> },
          { path:'messages', element:<AdminMessages /> },
          { path:'reviews', element:<AdminReviews /> },
+         { path:'reports', element:<AdminReports /> },
          { path:'testdrives', element:<AdminTestDrives /> },
+         { path:'wishlists', element:<AdminWishlists /> },
+         { path:'purchases', element:<AdminPurchases /> },
          { path:'settings', element:<AdminSettings /> },
       ]
    },
