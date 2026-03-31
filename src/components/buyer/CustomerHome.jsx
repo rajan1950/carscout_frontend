@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { FaCarSide, FaTag } from "react-icons/fa";
+import { FaCarSide } from "react-icons/fa";
 import SellCarModel from "../seller/SellCarModel";
 import { getAuthUserId, readAuthSession } from "../../utils/auth";
 import { useNotifications } from "../../hooks/useNotifications";
+import { createBookingApi } from "../../services/bookingService";
+import { createReportApi } from "../../services/reportService";
+import { addToWishlistApi, getUserWishlistApi, removeFromWishlistApi } from "../../services/wishlistService";
 import { FilterBar } from "./FilterBar";
 import { CompareSection } from "./CompareSection";
 import { FavoriteSection } from "./FavoriteSection";
@@ -13,7 +16,29 @@ import { CarCard } from "./CarCard";
 import { CarModal } from "./CarModal";
 import { ActionModal } from "./ActionModal";
 
-const BUYER_FAVORITES_KEY = "carscout_buyer_favorites";
+const COMPARE_STORAGE_KEY = "carscout.compareList";
+const PURCHASED_CAR_STORAGE_KEY = "carscout.purchasedCarIds";
+const PURCHASED_CARS_UPDATED_EVENT = "carscout-purchased-cars-updated";
+
+const readCompareList = () => {
+  try {
+    const raw = localStorage.getItem(COMPARE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const readPurchasedCarIds = () => {
+  try {
+    const raw = localStorage.getItem(PURCHASED_CAR_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
 
 const formatPrice = (price) => {
   const numeric = Number(price || 0);
@@ -25,6 +50,8 @@ const formatPrice = (price) => {
 };
 
 export const CustomerHome = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { fetchUnreadCount } = useNotifications();
   const [isSellWizardOpen, setIsSellWizardOpen] = useState(false);
   const [cars, setCars] = useState([]);
@@ -35,7 +62,8 @@ export const CustomerHome = () => {
   const [sortBy, setSortBy] = useState("latest");
   const [selectedCar, setSelectedCar] = useState(null);
   const [favorites, setFavorites] = useState([]);
-  const [compareList, setCompareList] = useState([]);
+  const [compareList, setCompareList] = useState(() => readCompareList());
+  const [purchasedCarIds, setPurchasedCarIds] = useState(() => readPurchasedCarIds());
   const [actionType, setActionType] = useState(null);
   const [submittingAction, setSubmittingAction] = useState(false);
 
@@ -65,6 +93,13 @@ export const CustomerHome = () => {
     comment: "",
   });
 
+  const [reportForm, setReportForm] = useState({
+    reason: "",
+    description: "",
+  });
+
+  const isWishlistView = searchParams.get("view") === "wishlist";
+
   const fetchCars = async () => {
     setLoading(true);
     try {
@@ -79,29 +114,63 @@ export const CustomerHome = () => {
   };
 
   useEffect(() => {
-    const raw = localStorage.getItem(BUYER_FAVORITES_KEY);
-    if (!raw) {
-      return;
-    }
-    try {
-      const parsed = JSON.parse(raw);
-      setFavorites(Array.isArray(parsed) ? parsed : []);
-    } catch {
-      setFavorites([]);
-    }
+    fetchCars();
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(BUYER_FAVORITES_KEY, JSON.stringify(favorites));
-  }, [favorites]);
+    const fetchWishlist = async () => {
+      if (!userId) {
+        setFavorites([]);
+        return;
+      }
+
+      try {
+        const response = await getUserWishlistApi(userId);
+        const items = Array.isArray(response?.data) ? response.data : [];
+        const nextFavorites = items
+          .map((item) => item?.carId?._id || item?.carId)
+          .filter(Boolean);
+        setFavorites(nextFavorites);
+      } catch {
+        setFavorites([]);
+      }
+    };
+
+    fetchWishlist();
+  }, [userId]);
 
   useEffect(() => {
-    fetchCars();
+    localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compareList));
+  }, [compareList]);
+
+  useEffect(() => {
+    setCompareList((prev) => prev.filter((car) => !purchasedCarIds.includes(car._id)));
+  }, [purchasedCarIds]);
+
+  useEffect(() => {
+    const syncPurchasedCars = () => {
+      setPurchasedCarIds(readPurchasedCarIds());
+    };
+
+    syncPurchasedCars();
+    window.addEventListener("storage", syncPurchasedCars);
+    window.addEventListener(PURCHASED_CARS_UPDATED_EVENT, syncPurchasedCars);
+
+    return () => {
+      window.removeEventListener("storage", syncPurchasedCars);
+      window.removeEventListener(PURCHASED_CARS_UPDATED_EVENT, syncPurchasedCars);
+    };
   }, []);
 
   const filteredCars = useMemo(() => {
     let items = [...cars];
     const normalizedQuery = query.trim().toLowerCase();
+
+    // Keep buyer inventory focused on cars not already in wishlist.
+    items = items.filter((car) => !favorites.includes(car._id));
+
+    // Hide purchased cars from buyer inventory.
+    items = items.filter((car) => !purchasedCarIds.includes(car._id));
 
     if (normalizedQuery) {
       items = items.filter((car) =>
@@ -128,17 +197,35 @@ export const CustomerHome = () => {
     }
 
     return items;
-  }, [cars, query, fuelFilter, sortBy]);
+  }, [cars, query, fuelFilter, sortBy, favorites, purchasedCarIds]);
 
   const inventoryValue = useMemo(
     () => cars.reduce((sum, car) => sum + Number(car.price || 0), 0),
     [cars]
   );
 
-  const toggleFavorite = (carId) => {
-    setFavorites((prev) =>
-      prev.includes(carId) ? prev.filter((id) => id !== carId) : [...prev, carId]
-    );
+  const toggleFavorite = async (carId) => {
+    if (!userId) {
+      toast.error("Login required to manage wishlist");
+      return;
+    }
+
+    const isFavorite = favorites.includes(carId);
+
+    try {
+      if (isFavorite) {
+        await removeFromWishlistApi({ userId, carId });
+        setFavorites((prev) => prev.filter((id) => id !== carId));
+        toast.success("Removed from wishlist");
+        return;
+      }
+
+      await addToWishlistApi({ userId, carId });
+      setFavorites((prev) => [...prev, carId]);
+      toast.success("Added to wishlist");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update wishlist");
+    }
   };
 
   const toggleCompare = (car) => {
@@ -203,17 +290,15 @@ export const CustomerHome = () => {
       const payload = {
         userId,
         carId: selectedCar._id,
-        date: testDriveForm.date,
-        location: testDriveForm.location,
-        status: "pending",
+        bookingDate: testDriveForm.date,
       };
-      await axios.post("http://localhost:4444/testdrive/add", payload);
-      toast.success("Test drive requested");
+      await createBookingApi(payload);
+      toast.success("Booking requested");
       fetchUnreadCount();
       setTestDriveForm({ date: "", location: "" });
       closeActionModal();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to book test drive");
+      toast.error(err.response?.data?.message || "Failed to create booking");
     } finally {
       setSubmittingAction(false);
     }
@@ -248,7 +333,38 @@ export const CustomerHome = () => {
     }
   };
 
-  const favoriteCars = cars.filter((car) => favorites.includes(car._id));
+  const submitReport = async (event) => {
+    event.preventDefault();
+    if (!selectedCar || submittingAction) {
+      return;
+    }
+    if (!userId) {
+      toast.error("Login required to submit report");
+      return;
+    }
+
+    setSubmittingAction(true);
+    try {
+      const payload = {
+        userId,
+        carId: selectedCar._id,
+        reason: reportForm.reason,
+        description: reportForm.description,
+      };
+      await createReportApi(payload);
+      toast.success("Report submitted");
+      setReportForm({ reason: "", description: "" });
+      closeActionModal();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to submit report");
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const favoriteCars = cars.filter(
+    (car) => favorites.includes(car._id) && !purchasedCarIds.includes(car._id)
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
@@ -266,7 +382,7 @@ export const CustomerHome = () => {
             <p className="text-2xl font-black">{cars.length}</p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/15 p-4">
-            <p className="text-xs uppercase text-cyan-200">Favorites</p>
+            <p className="text-xs uppercase text-cyan-200">Wishlist</p>
             <p className="text-2xl font-black">{favorites.length}</p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/15 p-4">
@@ -280,59 +396,80 @@ export const CustomerHome = () => {
         </div>
       </section>
 
-      <FilterBar
-        query={query}
-        setQuery={setQuery}
-        fuelFilter={fuelFilter}
-        setFuelFilter={setFuelFilter}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-      />
+      {!isWishlistView && (
+        <>
+          <FilterBar
+            query={query}
+            setQuery={setQuery}
+            fuelFilter={fuelFilter}
+            setFuelFilter={setFuelFilter}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+          />
 
-      <CompareSection
-        compareList={compareList}
-        onClear={() => setCompareList([])}
+          <CompareSection
+            compareList={compareList}
+            onClear={() => setCompareList([])}
+            formatPrice={formatPrice}
+          />
+
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-black text-slate-900">Buyer Inventory</h2>
+              <span className="rounded-full bg-slate-100 text-slate-700 px-4 py-1.5 text-sm font-semibold">
+                {filteredCars.length} cars found
+              </span>
+            </div>
+
+            {loading && <p className="text-slate-600">Loading cars...</p>}
+            {error && <p className="text-red-600">{error}</p>}
+
+            {!loading && !error && (
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {filteredCars.map((car) => {
+                  const isFavorite = favorites.includes(car._id);
+                  const isCompared = compareList.some((item) => item._id === car._id);
+
+                  return (
+                    <CarCard
+                      key={car._id}
+                      car={car}
+                      isFavorite={isFavorite}
+                      isCompared={isCompared}
+                      onViewDetails={setSelectedCar}
+                      onBuyNow={(item) => navigate(`/customer/buy/${item._id}`)}
+                      onToggleFavorite={toggleFavorite}
+                      onOpenInquiry={(item) => openAction(item, "inquiry")}
+                      onOpenTestDrive={(item) => openAction(item, "testdrive")}
+                      onToggleCompare={toggleCompare}
+                      onOpenReview={(item) => openAction(item, "review")}
+                      onOpenReport={(item) => openAction(item, "report")}
+                      formatPrice={formatPrice}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+      {isWishlistView && (
+        <section className="rounded-2xl border border-cyan-100 bg-cyan-50/60 p-5 mb-6">
+          <h2 className="text-2xl font-black text-slate-900">Wishlist View</h2>
+          <p className="text-slate-600 mt-1">
+            Cars in wishlist are hidden from Buyer Dashboard inventory until removed.
+          </p>
+        </section>
+      )}
+
+      <FavoriteSection
+        favoriteCars={favoriteCars}
         formatPrice={formatPrice}
+        onRemoveFromWishlist={toggleFavorite}
+        onViewDetails={setSelectedCar}
+        onBuyNow={(item) => navigate(`/customer/buy/${item._id}`)}
       />
-
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-black text-slate-900">Buyer Inventory</h2>
-          <span className="rounded-full bg-slate-100 text-slate-700 px-4 py-1.5 text-sm font-semibold">
-            {filteredCars.length} cars found
-          </span>
-        </div>
-
-        {loading && <p className="text-slate-600">Loading cars...</p>}
-        {error && <p className="text-red-600">{error}</p>}
-
-        {!loading && !error && (
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-            {filteredCars.map((car) => {
-              const isFavorite = favorites.includes(car._id);
-              const isCompared = compareList.some((item) => item._id === car._id);
-
-              return (
-                <CarCard
-                  key={car._id}
-                  car={car}
-                  isFavorite={isFavorite}
-                  isCompared={isCompared}
-                  onViewDetails={setSelectedCar}
-                  onToggleFavorite={toggleFavorite}
-                  onOpenInquiry={(item) => openAction(item, "inquiry")}
-                  onOpenTestDrive={(item) => openAction(item, "testdrive")}
-                  onToggleCompare={toggleCompare}
-                  onOpenReview={(item) => openAction(item, "review")}
-                  formatPrice={formatPrice}
-                />
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <FavoriteSection favoriteCars={favoriteCars} formatPrice={formatPrice} />
 
       <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
         <h2 className="text-xl font-black text-slate-900">Role Actions</h2>
@@ -366,9 +503,12 @@ export const CustomerHome = () => {
         setTestDriveForm={setTestDriveForm}
         reviewForm={reviewForm}
         setReviewForm={setReviewForm}
+        reportForm={reportForm}
+        setReportForm={setReportForm}
         submitInquiry={submitInquiry}
         submitTestDrive={submitTestDrive}
         submitReview={submitReview}
+        submitReport={submitReport}
         submittingAction={submittingAction}
         onClose={closeActionModal}
         formatPrice={formatPrice}
