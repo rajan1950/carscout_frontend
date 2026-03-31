@@ -2,6 +2,7 @@ import {
   FaCalendarCheck,
   FaCheckCircle,
   FaEnvelope,
+  FaFlag,
   FaMapMarkerAlt,
   FaStar,
 } from "react-icons/fa";
@@ -15,9 +16,12 @@ export const ActionModal = ({
   setTestDriveForm,
   reviewForm,
   setReviewForm,
+  reportForm,
+  setReportForm,
   submitInquiry,
   submitTestDrive,
   submitReview,
+  submitReport,
   submittingAction,
   onClose,
   formatPrice,
@@ -123,6 +127,34 @@ export const ActionModal = ({
               <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-slate-100 font-semibold">Cancel</button>
               <button type="submit" disabled={submittingAction} className="px-4 py-2 rounded-lg bg-amber-600 text-white font-semibold">
                 {submittingAction ? "Submitting..." : "Submit Review"}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {actionType === "report" && (
+          <form onSubmit={submitReport} className="space-y-3">
+            <p className="font-semibold text-red-800 inline-flex items-center gap-2"><FaFlag /> Report Listing</p>
+            <input
+              type="text"
+              value={reportForm.reason}
+              onChange={(event) => setReportForm((prev) => ({ ...prev, reason: event.target.value }))}
+              placeholder="Reason (required)"
+              required
+              className="w-full rounded-lg border border-slate-200 px-3 py-2"
+            />
+            <textarea
+              value={reportForm.description}
+              onChange={(event) => setReportForm((prev) => ({ ...prev, description: event.target.value }))}
+              placeholder="Description (optional)"
+              rows={4}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2"
+            />
+            <div className="text-xs text-slate-500 inline-flex items-center gap-1"><FaCheckCircle /> Reports are reviewed by admins.</div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-slate-100 font-semibold">Cancel</button>
+              <button type="submit" disabled={submittingAction} className="px-4 py-2 rounded-lg bg-red-700 text-white font-semibold">
+                {submittingAction ? "Submitting..." : "Submit Report"}
               </button>
             </div>
           </form>
