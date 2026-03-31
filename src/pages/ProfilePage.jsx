@@ -2,38 +2,143 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import UserNavbar from "../layouts/UserNavbar";
-import { getAuthProfile, isAuthenticated, updateAuthProfile } from "../utils/auth";
+import { isAuthenticated, updateAuthProfile } from "../utils/auth";
+import {
+  extractApiErrorMessage,
+  getAuthToken,
+  getUserProfileApi,
+  updateUserProfileApi,
+} from "../services/profileService";
 
 const createForm = (profile = {}) => ({
-  name: profile.name || "",
+  fullName: profile.fullName || "",
   email: profile.email || "",
   mobile: profile.mobile || "",
   address: profile.address || "",
   city: profile.city || "",
   area: profile.area || "",
-  pinCode: profile.pinCode || "",
-  profileImage: profile.image || "",
+  pincode: profile.pincode || "",
+  profileImage: profile.profileImage || "",
+  profilePhotoFile: null,
 });
+
+const parseApiUserToForm = (user = {}) => {
+  const firstName = String(user.firstname || user.firstName || "").trim();
+  const lastName = String(user.lastname || user.lastName || "").trim();
+  const computedFullName = `${firstName} ${lastName}`.trim();
+
+  return createForm({
+    fullName:
+      computedFullName ||
+      String(user.fullName || user.name || user.username || "").trim(),
+    email: String(user.email || "").trim(),
+    mobile: String(user.mobile || "").replace(/\D/g, ""),
+    address: String(user.address || "").trim(),
+    city: String(user.city || "").trim(),
+    area: String(user.area || "").trim(),
+    pincode: String(user.pinCode || user.pincode || "").replace(/\D/g, ""),
+    profileImage: String(user.profilepic || user.profileImage || user.image || "").trim(),
+  });
+};
+
+const splitFullName = (fullName = "") => {
+  const words = String(fullName)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length === 0) {
+    return { firstName: "", lastName: "" };
+  }
+
+  if (words.length === 1) {
+    return { firstName: words[0], lastName: "" };
+  }
+
+  return {
+    firstName: words[0],
+    lastName: words.slice(1).join(" "),
+  };
+};
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(() => getAuthProfile());
-  const [form, setForm] = useState(() => createForm(getAuthProfile()));
+  const [profile, setProfile] = useState(() => ({ name: "", email: "" }));
+  const [form, setForm] = useState(() => createForm());
   const [errors, setErrors] = useState({});
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const loadProfileFromApi = async ({ showErrorToast = true } = {}) => {
+    const token = getAuthToken();
+
+    if (!token) {
+      if (showErrorToast) {
+        toast.error("Session expired. Please login again.");
+      }
+      navigate("/login");
+      return false;
+    }
+
+    try {
+      const response = await getUserProfileApi(token);
+      const apiUser = response?.data?.user || {};
+      const apiForm = parseApiUserToForm(apiUser);
+
+      setForm(apiForm);
+      setProfile({
+        name: apiForm.fullName,
+        email: apiForm.email,
+      });
+
+      // Keep auth cache synced with DB-backed profile to update shared UI (navbar, menus).
+      updateAuthProfile({
+        name: apiForm.fullName,
+        email: apiForm.email,
+        mobile: apiForm.mobile,
+        address: apiForm.address,
+        city: apiForm.city,
+        area: apiForm.area,
+        pincode: apiForm.pincode,
+        profileImage: apiForm.profileImage,
+      });
+
+      return true;
+    } catch (error) {
+      const status = error?.response?.status;
+      const message = extractApiErrorMessage(error);
+
+      if (status === 401) {
+        toast.error(message || "Session expired. Please login again.");
+        navigate("/login");
+        return false;
+      }
+
+      if (showErrorToast) {
+        toast.error(message);
+      }
+
+      return false;
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/login");
+      return;
     }
+
+    const bootstrap = async () => {
+      setIsLoadingProfile(true);
+      await loadProfileFromApi({ showErrorToast: true });
+      setIsLoadingProfile(false);
+    };
+
+    bootstrap();
   }, [navigate]);
 
-  useEffect(() => {
-    setProfile(getAuthProfile());
-    setForm(createForm(getAuthProfile()));
-  }, []);
-
   const initials = useMemo(() => {
-    const words = String(form.name || "")
+    const words = String(form.fullName || "")
       .trim()
       .split(/\s+/)
       .filter(Boolean);
@@ -50,7 +155,7 @@ const ProfilePage = () => {
   }, [form.name]);
 
   const completePercent = useMemo(() => {
-    const required = [form.name, form.email, form.mobile, form.address, form.city, form.area, form.pinCode];
+    const required = [form.fullName, form.email, form.mobile, form.address, form.city, form.area, form.pincode];
     const done = required.filter((value) => String(value || "").trim()).length;
     return Math.round((done / required.length) * 100);
   }, [form]);
@@ -60,7 +165,7 @@ const ProfilePage = () => {
 
     setForm((prev) => ({
       ...prev,
-      [name]: name === "mobile" || name === "pinCode" ? value.replace(/\D/g, "") : value,
+      [name]: name === "mobile" || name === "pincode" ? value.replace(/\D/g, "") : value,
     }));
 
     if (errors[name]) {
@@ -87,7 +192,11 @@ const ProfilePage = () => {
 
     const reader = new FileReader();
     reader.onload = () => {
-      setForm((prev) => ({ ...prev, profileImage: String(reader.result || "") }));
+      setForm((prev) => ({
+        ...prev,
+        profileImage: String(reader.result || ""),
+        profilePhotoFile: file,
+      }));
       setErrors((prev) => ({ ...prev, profileImage: "" }));
     };
     reader.onerror = () => {
@@ -98,7 +207,7 @@ const ProfilePage = () => {
   };
 
   const removeUploadedPhoto = () => {
-    setForm((prev) => ({ ...prev, profileImage: "" }));
+    setForm((prev) => ({ ...prev, profileImage: "", profilePhotoFile: null }));
     if (errors.profileImage) {
       setErrors((prev) => ({ ...prev, profileImage: "" }));
     }
@@ -107,8 +216,8 @@ const ProfilePage = () => {
   const validate = () => {
     const next = {};
 
-    if (!form.name.trim()) {
-      next.name = "Full name is required";
+    if (!form.fullName.trim()) {
+      next.fullName = "Full name is required";
     }
 
     if (!form.email.trim()) {
@@ -135,16 +244,16 @@ const ProfilePage = () => {
       next.area = "Area is required";
     }
 
-    if (!form.pinCode.trim()) {
-      next.pinCode = "Pin code is required";
-    } else if (form.pinCode.trim().length !== 6) {
-      next.pinCode = "Pin code must be 6 digits";
+    if (!form.pincode.trim()) {
+      next.pincode = "Pin code is required";
+    } else if (form.pincode.trim().length !== 6) {
+      next.pincode = "Pin code must be 6 digits";
     }
 
     return next;
   };
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
 
     const nextErrors = validate();
@@ -155,18 +264,58 @@ const ProfilePage = () => {
       return;
     }
 
-    const updated = updateAuthProfile(form);
+    const token = getAuthToken();
 
-    if (!updated) {
-      toast.error("Unable to save profile. Please login again.");
+    if (!token) {
+      toast.error("Session expired. Please login again.");
       navigate("/login");
       return;
     }
 
-    const nextProfile = getAuthProfile();
-    setProfile(nextProfile);
-    setForm(createForm(nextProfile));
-    toast.success("Profile updated successfully.");
+    const payload = new FormData();
+    payload.append("fullName", form.fullName.trim());
+    payload.append("email", form.email.trim());
+    payload.append("mobile", form.mobile.trim());
+    payload.append("pincode", form.pincode.trim());
+    payload.append("address", form.address.trim());
+    payload.append("city", form.city.trim());
+    payload.append("area", form.area.trim());
+
+    if (form.profilePhotoFile) {
+      payload.append("profilePhoto", form.profilePhotoFile);
+    }
+
+    setIsSaving(true);
+
+    try {
+      const updateResponse = await updateUserProfileApi(token, payload);
+
+      if (updateResponse.status !== 200) {
+        toast.error("Unable to save profile right now.");
+        return;
+      }
+
+      const refreshed = await loadProfileFromApi({ showErrorToast: true });
+
+      if (!refreshed) {
+        return;
+      }
+
+      toast.success("Profile updated successfully.");
+    } catch (error) {
+      const status = error?.response?.status;
+      const message = extractApiErrorMessage(error);
+
+      if (status === 401) {
+        toast.error(message || "Session expired. Please login again.");
+        navigate("/login");
+        return;
+      }
+
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const fieldClass =
@@ -215,12 +364,16 @@ const ProfilePage = () => {
             Add your full profile details including address, city, area, pin code and mobile number.
           </p>
 
+          {isLoadingProfile ? (
+            <p className="mt-4 text-sm text-slate-600">Loading profile...</p>
+          ) : null}
+
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">Full Name</label>
-                <input name="name" value={form.name} onChange={onInput} className={fieldClass} />
-                {errors.name ? <p className="mt-1 text-xs text-rose-600">{errors.name}</p> : null}
+                <input name="fullName" value={form.fullName} onChange={onInput} className={fieldClass} />
+                {errors.fullName ? <p className="mt-1 text-xs text-rose-600">{errors.fullName}</p> : null}
               </div>
 
               <div>
@@ -245,14 +398,14 @@ const ProfilePage = () => {
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">Pin Code</label>
                 <input
-                  name="pinCode"
-                  value={form.pinCode}
+                  name="pincode"
+                  value={form.pincode}
                   onChange={onInput}
                   maxLength={6}
                   className={fieldClass}
                   placeholder="6-digit pin code"
                 />
-                {errors.pinCode ? <p className="mt-1 text-xs text-rose-600">{errors.pinCode}</p> : null}
+                {errors.pincode ? <p className="mt-1 text-xs text-rose-600">{errors.pincode}</p> : null}
               </div>
             </div>
 
@@ -307,12 +460,13 @@ const ProfilePage = () => {
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-              <p className="text-xs text-slate-500">Your profile data is saved locally in your login session.</p>
+              <p className="text-xs text-slate-500">Your profile data is securely synced with your account.</p>
               <button
                 type="submit"
+                disabled={isLoadingProfile || isSaving}
                 className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800"
               >
-                Save Profile
+                {isSaving ? "Saving..." : "Save Profile"}
               </button>
               
             </div>
