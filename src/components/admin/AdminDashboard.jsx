@@ -362,8 +362,8 @@ export const AdminDashboard = () => {
         <div className="mt-8 grid grid-cols-1 xl:grid-cols-2 gap-5">
           <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
             <h3 className="text-lg font-semibold mb-4">Activity Comparison (Bar)</h3>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-72 w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={288}>
                 <BarChart data={chartData}>
                   <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} angle={-20} textAnchor="end" height={60} />
                   <YAxis allowDecimals={false} />
@@ -380,9 +380,9 @@ export const AdminDashboard = () => {
 
           <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
             <h3 className="text-lg font-semibold mb-4">Distribution (Pie)</h3>
-            <div className="h-72">
+            <div className="h-72 w-full min-w-0">
               {pieData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={288}>
                   <PieChart>
                     <Pie
                       data={pieData}
