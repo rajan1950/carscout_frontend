@@ -1,10 +1,11 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { clearAuthSession, getAuthProfile } from "../utils/auth";
 import { FaCarSide } from "react-icons/fa";
 import { NotificationBell } from "../components/notifications/NotificationBell";
 
 export const CustomerNavbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const profile = getAuthProfile();
 
   const handleLogout = () => {
@@ -12,12 +13,24 @@ export const CustomerNavbar = () => {
     navigate("/login");
   };
 
-  const navStyle = ({ isActive }) =>
-    isActive
-      ? "text-cyan-800 font-semibold bg-cyan-50 border border-cyan-200"
-      : "text-slate-600 hover:text-cyan-700 border border-transparent hover:bg-cyan-50";
+  const navBase = "rounded-full px-4 py-2 text-sm font-semibold transition border";
 
-  const navBase = "rounded-full px-4 py-2 text-sm transition";
+  const navStyle = ({ isActive }) =>
+    `${navBase} ${
+      isActive
+        ? "text-cyan-800 bg-cyan-50 border-cyan-200"
+        : "text-slate-600 border-transparent hover:text-cyan-700 hover:bg-cyan-50"
+    }`;
+
+  const isWishlistActive =
+    location.pathname === "/customer" &&
+    new URLSearchParams(location.search).get("view") === "wishlist";
+
+  const wishlistStyle = `${navBase} ${
+    isWishlistActive
+      ? "text-cyan-800 bg-cyan-50 border-cyan-200"
+      : "text-slate-600 border-transparent hover:text-cyan-700 hover:bg-cyan-50"
+  }`;
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#ecfeff,_#f8fafc_40%,_#f5f3ff)]">
@@ -31,10 +44,23 @@ export const CustomerNavbar = () => {
           </div>
 
           <div className="flex items-center gap-2 ">
-            <NavLink to="/" className={(args) => `${navStyle(args)} ${navBase}`}>
-              Home
+            <NavLink
+              to="/customer"
+              end
+              className={navStyle}
+            >
+              Dashboard
             </NavLink>
-            <NavLink to="/notifications" className={(args) => `${navStyle(args)} ${navBase}`}>
+            <NavLink
+              to="/customer?view=wishlist"
+              className={() => wishlistStyle}
+            >
+              Wishlist
+            </NavLink>
+            <NavLink to="/customer/compare" className={navStyle}>
+              Compare
+            </NavLink>
+            <NavLink to="/notifications" className={navStyle}>
               Notifications
             </NavLink>
             <NotificationBell />
