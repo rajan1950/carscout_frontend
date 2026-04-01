@@ -31,9 +31,9 @@ const stepConfig = [
 ];
 
 const options = {
-  brand: ["Maruti Suzuki", "Hyundai", "Honda", "Tata", "Mahindra", "BMW", "Audi", "Toyota"],
-  city: ["Ahmedabad", "Mumbai", "Delhi", "Bangalore", "Pune", "Hyderabad", "Chennai"],
-  owner: ["1st owner", "2nd owner", "3rd owner", "4th owner"],
+  brand: ["MarutiSuzuki", "Hyundai", "Honda", "Tata", "Mahindra", "BMW", "Audi", "Toyota", "Kia", "Renault", "Skoda", "Volkswagen", "Mercedes-Benz", "Ford", "Nissan", "Jaguar", "Land Rover", "Volvo", "Mitsubishi", "Isuzu", "Datsun", "Lexus", "Infiniti", "Acura", "Alfa Romeo", "Fiat", "Mini", "Porsche", "Rolls-Royce", "Bentley"],
+  city: ["Ahmedabad", "Mumbai", "Delhi", "Bangalore", "Pune", "Hyderabad", "Chennai", "Kolkata", "Surat", "Jaipur", "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane", "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna", "Vadodara", "Ghaziabad", "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Kalyan-Dombivli", "Vasai-Virar", "Varanasi", "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", "Navi Mumbai", "Allahabad", "Ranchi", "Howrah", "Coimbatore", "Jabalpur", "Gwalior", "Vijayawada", "Jodhpur", "Madurai", "Raipur", "Kota", "Guwahati", "Chandigarh", "Solapur", "Hubli-Dharwad", "Bareilly", "Mysore", "Moradabad", "Gurgaon", "Aligarh", "Jalandhar", "Tiruchirappalli", "Bhubaneswar"],
+  owner: ["1st owner", "2nd owner", "3rd owner", "4th owner", "5th owner", "6th owner", "7th owner", "8th owner", "9th owner", "10+ owner"],
   mileage: [
     "0 - 10,000 km",
     "10,000 - 20,000 km",
@@ -42,13 +42,16 @@ const options = {
     "40,000 - 50,000 km",
     "50,000 - 60,000 km",
     "60,000 - 70,000 km",
+    "70,000 - 80,000 km",
+    "80,000 - 90,000 km",
+    "90,000 - 100,000 km",
   ],
   fuelType: ["Petrol", "Diesel", "Electric", "CNG"],
   transmission: ["Manual", "Automatic"],
 };
 
 const modelByBrand = {
-  MarutiSuzuki: ["Swift", "Baleno", "Brezza", "Dzire"],
+  MarutiSuzuki: ["Swift", "Baleno", "Dzire", "Vitara Brezza"],
   Hyundai: ["i20", "Creta", "Venue", "Verna"],
   Honda: ["City", "Amaze", "Elevate"],
   Tata: ["Nexon", "Harrier", "Altroz", "Punch"],
@@ -56,6 +59,29 @@ const modelByBrand = {
   BMW: ["3 Series", "5 Series", "X1", "X3"],
   Audi: ["A4", "A6", "Q3", "Q5"],
   Toyota: ["Innova", "Fortuner", "Glanza", "Hyryder"],
+  Kia: ["Seltos", "Sonet", "Carnival", "Carens"],
+  Renault: ["Kwid", "Triber", "Duster", "Captur"],
+  Skoda: ["Octavia", "Rapid", "Kushaq", "Slavia"],
+  Volkswagen: ["Polo", "Vento", "Taigun", "Slavia"],
+  "Mercedes-Benz": ["C-Class", "E-Class", "GLA", "GLC"],
+  Ford: ["EcoSport", "Endeavour", "Figo", "Freestyle"],
+  Nissan: ["Magnite", "Kicks", "Sunny", "Altima"],
+  Jaguar: ["XE", "XF", "F-Pace", "E-Pace"],
+  "Land Rover": ["Range Rover Evoque", "Discovery Sport", "Defender", "Range Rover Velar"],
+  Volvo: ["XC40", "XC60", "XC90", "S60"],
+  Mitsubishi: ["Outlander", "Pajero Sport", "Eclipse Cross", "Montero"],
+  Isuzu: ["D-Max V-Cross", "MU-X", "D-Max", "MU-7"],
+  Datsun: ["GO", "GO+", "redi-GO", "Cross"],
+  Lexus: ["RX", "NX", "ES", "UX"],
+  Infiniti: ["Q50", "QX50", "Q60", "QX60"],
+  Acura: ["ILX", "TLX", "RDX", "MDX"],
+  "Alfa Romeo": ["Giulia", "Stelvio", "Tonale", "4C"],
+  Fiat: ["Punto", "Linea", "500", "Avventura"],
+  Mini: ["Cooper", "Countryman", "Clubman", "Convertible"],
+  Porsche: ["Cayenne", "Macan", "Panamera", "911"],
+  "Rolls-Royce": ["Phantom", "Ghost", "Wraith", "Cullinan"],
+  Bentley: ["Continental GT", "Bentayga", "Flying Spur", "Mulsanne"],
+  
 };
 
 const yearOptions = Array.from({ length: 15 }, (_, i) => String(new Date().getFullYear() - i));
