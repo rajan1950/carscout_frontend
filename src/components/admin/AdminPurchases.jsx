@@ -4,7 +4,6 @@ import { createNotificationForUser } from "../../services/notificationService";
 import {
   deletePurchaseLocal,
   getAllPurchasesLocal,
-  getPurchaseStatsLocal,
   updatePurchaseStatusLocal,
 } from "../../services/purchaseService";
 import { buildPurchaseStatusMailTemplate } from "../../utils/mailTemplates";
@@ -83,7 +82,24 @@ export const AdminPurchases = () => {
     };
   }, []);
 
-  const stats = useMemo(() => getPurchaseStatsLocal(), [purchases]);
+  const stats = useMemo(() => {
+    const uniqueBuyers = new Set(
+      purchases
+        .map((item) => item?.buyer?.email || item?.buyer?.fullName || item?.userId || "")
+        .filter(Boolean)
+    ).size;
+
+    const totalAmount = purchases.reduce(
+      (sum, item) => sum + Number(item?.totalAmount || 0),
+      0
+    );
+
+    return {
+      totalPurchases: purchases.length,
+      uniqueBuyers,
+      totalAmount,
+    };
+  }, [purchases]);
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
