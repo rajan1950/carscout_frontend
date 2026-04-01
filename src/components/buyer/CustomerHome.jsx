@@ -290,7 +290,10 @@ export const CustomerHome = () => {
       const payload = {
         userId,
         carId: selectedCar._id,
+        date: testDriveForm.date,
         bookingDate: testDriveForm.date,
+        location: testDriveForm.location,
+        status: "pending",
       };
       await createBookingApi(payload);
       toast.success("Booking requested");
