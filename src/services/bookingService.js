@@ -1,7 +1,7 @@
 import axios from "axios";
 import { readAuthSession } from "../utils/auth";
 
-const BOOKING_BASE_URL = "http://localhost:4444/booking";
+const BOOKING_BASE_URL = "http://localhost:4444/testdrive";
 
 const getAuthHeaders = () => {
   const token = readAuthSession()?.token;
@@ -16,7 +16,16 @@ const getAuthHeaders = () => {
 };
 
 export const createBookingApi = async (payload) => {
-  const response = await axios.post(`${BOOKING_BASE_URL}/add`, payload, {
+  const normalizedPayload = {
+    userId: payload?.userId,
+    carId: payload?.carId,
+    date: payload?.date || payload?.bookingDate,
+    bookingDate: payload?.bookingDate || payload?.date,
+    location: payload?.location,
+    status: payload?.status || "pending",
+  };
+
+  const response = await axios.post(`${BOOKING_BASE_URL}/add`, normalizedPayload, {
     headers: getAuthHeaders(),
   });
 
