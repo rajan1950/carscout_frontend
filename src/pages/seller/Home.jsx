@@ -16,6 +16,9 @@ import SellCarModel from "../../components/seller/SellCarModel";
 import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
 
 const Home = () => {
+  const MotionH1 = motion.h1;
+  const MotionP = motion.p;
+  const MotionDiv = motion.div;
   const canOpenAdminPanel = isAdminAuthenticated();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,16 +123,16 @@ const Home = () => {
             <p className="uppercase tracking-[0.2em] text-xs md:text-sm text-amber-700 font-semibold mb-4">
               Premium Automotive Marketplace
             </p>
-            <motion.h1
+            <MotionH1
               initial={{ opacity: 0, y: -40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-6xl font-black tracking-tight mb-5 text-slate-900"
             >
               Buy Smarter. Sell Faster. Trade With Confidence.
-            </motion.h1>
+            </MotionH1>
 
-            <motion.p
+            <MotionP
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -138,7 +141,7 @@ const Home = () => {
               Car Scout is built for both sides of the market. Buyers get verified inventory,
               smart filtering, and quick actions. Sellers get faster listing flow, better visibility,
               and lead-ready inquiries.
-            </motion.p>
+            </MotionP>
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
@@ -178,7 +181,7 @@ const Home = () => {
             </div>
           </div>
 
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -257,7 +260,7 @@ const Home = () => {
                 )}
               </div>
             </div>
-          </motion.div>
+          </MotionDiv>
         </div>
       </section>
 
@@ -357,33 +360,62 @@ const Home = () => {
         )}
       </section>
 
-      <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-800 text-white py-16 text-center">
+      <footer className="bg-slate-950 text-slate-200 border-t border-slate-800 mt-10">
+        <div className="max-w-7xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <h3 className="text-xl font-black text-white">Car Scout</h3>
+            <p className="mt-3 text-sm text-slate-400 leading-relaxed">
+              A unified marketplace for buying and selling cars with verified listings,
+              smooth inquiry flows, and fast seller onboarding.
+            </p>
+          </div>
 
-        <h2 className="text-3xl font-bold mb-4">
-          Ready To Buy Or Sell Your Next Car?
-        </h2>
+          <div>
+            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">Explore</h4>
+            <div className="mt-3 space-y-2 text-sm">
+              <Link to="/customer" className="block hover:text-white transition">Browse Cars</Link>
+              <button
+                type="button"
+                onClick={() => setIsSellWizardOpen(true)}
+                className="text-left hover:text-white transition"
+              >
+                Sell Your Car
+              </button>
+              {canOpenAdminPanel && (
+                <Link to="/adminpanel/dashboard" className="block hover:text-white transition">Admin Panel</Link>
+              )}
+            </div>
+          </div>
 
-        <p className="mb-6">
-          Choose your side and launch into a high-conversion experience.
-        </p>
+          <div>
+            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">Services</h4>
+            <div className="mt-3 space-y-2 text-sm text-slate-400">
+              <a href="/services#servicing" className="block hover:text-white transition">
+                Car Servicing
+              </a>
+              <a href="/services#policies" className="block hover:text-white transition">Policies & Terms</a>
+            </div>
+          </div>
 
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            to="/customer"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold"
-          >
-            Buy Cars
-          </Link>
-          <button
-            type="button"
-            onClick={() => setIsSellWizardOpen(true)}
-            className="bg-white text-slate-900 px-8 py-3 rounded-lg font-semibold hover:scale-105 transition"
-          >
-            Sell Your Car
-          </button>
+          <div>
+            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">Contact Us</h4>
+            <p className="mt-3 text-sm text-slate-400">Need help with listing, booking, or purchases?</p>
+            <a href="/services#contact" className="mt-2 inline-block text-sm text-emerald-400 hover:text-emerald-300 transition">
+              carscout85@gmail.com
+            </a>
+            <a href="tel:+918320161950" className="mt-1 block text-sm text-slate-400 hover:text-white transition">
+              +91 83201 61950
+            </a>
+          </div>
         </div>
 
-      </section>
+        <div className="border-t border-slate-800">
+          <div className="max-w-7xl mx-auto px-6 py-4 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
+            <p>© {new Date().getFullYear()} Car Scout. All rights reserved.</p>
+            <p>Built for smarter car decisions.</p>
+          </div>
+        </div>
+      </footer>
 
       <SellCarModel
         isOpen={isSellWizardOpen}
