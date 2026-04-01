@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import UserNavbar from "../layouts/UserNavbar";
@@ -41,26 +41,6 @@ const parseApiUserToForm = (user = {}) => {
   });
 };
 
-const splitFullName = (fullName = "") => {
-  const words = String(fullName)
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (words.length === 0) {
-    return { firstName: "", lastName: "" };
-  }
-
-  if (words.length === 1) {
-    return { firstName: words[0], lastName: "" };
-  }
-
-  return {
-    firstName: words[0],
-    lastName: words.slice(1).join(" "),
-  };
-};
-
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(() => ({ name: "", email: "" }));
@@ -69,7 +49,7 @@ const ProfilePage = () => {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const loadProfileFromApi = async ({ showErrorToast = true } = {}) => {
+  const loadProfileFromApi = useCallback(async ({ showErrorToast = true } = {}) => {
     const token = getAuthToken();
 
     if (!token) {
@@ -120,7 +100,7 @@ const ProfilePage = () => {
 
       return false;
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -135,7 +115,7 @@ const ProfilePage = () => {
     };
 
     bootstrap();
-  }, [navigate]);
+  }, [navigate, loadProfileFromApi]);
 
   const initials = useMemo(() => {
     const words = String(form.fullName || "")
@@ -152,7 +132,7 @@ const ProfilePage = () => {
     }
 
     return "PR";
-  }, [form.name]);
+  }, [form.fullName]);
 
   const completePercent = useMemo(() => {
     const required = [form.fullName, form.email, form.mobile, form.address, form.city, form.area, form.pincode];
