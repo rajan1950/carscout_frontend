@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -58,13 +58,13 @@ export const AdminUsers = () => {
     setEditingUserId(null);
   };
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     if (submitting) {
       return;
     }
     setIsModalOpen(false);
     resetForm();
-  };
+  }, [submitting]);
 
   const openCreateModal = () => {
     resetForm();
@@ -185,7 +185,7 @@ export const AdminUsers = () => {
 
     window.addEventListener("keydown", onEscape);
     return () => window.removeEventListener("keydown", onEscape);
-  }, [isModalOpen, submitting]);
+  }, [isModalOpen, closeModal]);
 
   return (
     <div>
