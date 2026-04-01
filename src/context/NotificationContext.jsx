@@ -1,5 +1,6 @@
-import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AUTH_SESSION_EVENT, readAuthSession } from "../utils/auth";
+import { NotificationContext } from "./NotificationContextValue";
 import {
   deleteNotificationById,
   getMyNotifications,
@@ -7,8 +8,6 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from "../services/notificationService";
-
-export const NotificationContext = createContext(null);
 
 export const NotificationProvider = ({ children }) => {
   const [list, setList] = useState([]);
