@@ -87,6 +87,7 @@ const modelByBrand = {
 const yearOptions = Array.from({ length: 15 }, (_, i) => String(new Date().getFullYear() - i));
 
 const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
+  const MotionDiv = motion.div;
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
@@ -341,14 +342,14 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm p-3 sm:p-6"
         >
           <div className="h-full w-full flex items-center justify-center">
-            <motion.div
+            <MotionDiv
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
@@ -418,9 +419,9 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </MotionDiv>
           </div>
-        </motion.div>
+        </MotionDiv>
       )}
     </AnimatePresence>
   );
