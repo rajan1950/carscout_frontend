@@ -10,13 +10,11 @@ export const Signup = () => {
 
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
     reset
   } = useForm();
 
