@@ -38,6 +38,7 @@ import { AdminRouteGuard } from "../components/admin/AdminRouteGuard";
 // SELLER PAGES
 // ==============================
 import Home from "../pages/seller/Home.jsx";
+import Services from "../pages/seller/Services.jsx";
 import ProfilePage from "../pages/ProfilePage.jsx";
 import NotificationsPage from "../pages/NotificationsPage.jsx";
 
@@ -56,6 +57,7 @@ const router = createBrowserRouter([
    {path:'/forgotpassword', element: <ForgotPassword/>},
    {path:'/resetpassword/:token', element: <ResetPassword/>},
    {path:'/', element: <Home/>},
+   {path:'/services', element: <Services/>},
    {path:'/profile', element: <ProfilePage/>},
    {path:'/notifications', element: <NotificationsPage/>},
    // Customer
