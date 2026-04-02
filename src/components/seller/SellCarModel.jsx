@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaChevronLeft } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { sellCarApi } from "../../services/sellCarApi";
+import { getAuthProfile, getAuthUserId, readAuthSession } from "../../utils/auth";
+import { buildCarCreatorPayload, saveCarCreatorMeta } from "../../utils/carOwnership";
 
 const initialForm = {
   brand: "",
@@ -91,6 +93,9 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
+  const profile = getAuthProfile();
+  const userId = getAuthUserId();
+  const session = readAuthSession();
 
   const selectedStep = stepConfig[step];
 
@@ -179,8 +184,28 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
     );
     payload.append("image", form.imageFile);
 
+    const creatorPayload = buildCarCreatorPayload({
+      userId,
+      role: session?.role,
+      name: profile.name,
+      email: profile.email,
+    });
+
+    Object.entries(creatorPayload).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        payload.append(key, String(value));
+      }
+    });
+
     try {
       const response = await sellCarApi(payload);
+      const createdCarId = response?.data?._id || response?._id || response?.car?._id || "";
+      saveCarCreatorMeta(createdCarId, {
+        name: profile.name,
+        email: profile.email,
+        userId,
+        role: session?.role,
+      });
       toast.success(response?.message || "Car listed successfully");
       if (typeof onSuccess === "function") {
         onSuccess();
