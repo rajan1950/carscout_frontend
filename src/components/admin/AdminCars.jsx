@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getAuthProfile, getAuthUserId, readAuthSession } from "../../utils/auth";
+import {
+  buildCarCreatorPayload,
+  getCarAddedByDetails,
+  saveCarCreatorMeta,
+} from "../../utils/carOwnership";
 
 const ADMIN_BASE_URL = "http://localhost:4444/admin";
 const CAR_BASE_URL = "http://localhost:4444/car";
@@ -20,6 +26,9 @@ const initialForm = {
 };
 
 export const AdminCars = () => {
+  const profile = getAuthProfile();
+  const userId = getAuthUserId();
+  const session = readAuthSession();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -107,8 +116,15 @@ export const AdminCars = () => {
         }
         toast.success("Car updated");
       } else {
+        const creatorPayload = buildCarCreatorPayload({
+          userId,
+          role: session?.role,
+          name: profile.name,
+          email: profile.email,
+        });
+
         const formData = new FormData();
-        Object.entries(payload).forEach(([key, value]) => {
+        Object.entries({ ...payload, ...creatorPayload }).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
             formData.append(key, String(value));
           }
@@ -119,6 +135,13 @@ export const AdminCars = () => {
 
         const res = await axios.post(`${CAR_BASE_URL}/add`, formData);
         const createdCar = res.data?.data;
+        const createdCarId = createdCar?._id || res.data?._id || "";
+        saveCarCreatorMeta(createdCarId, {
+          name: profile.name,
+          email: profile.email,
+          userId,
+          role: session?.role,
+        });
         if (createdCar?._id) {
           setCars((prev) => [createdCar, ...prev]);
         } else {
@@ -211,17 +234,24 @@ export const AdminCars = () => {
                 <th className="text-left px-4 py-3">Year</th>
                 <th className="text-left px-4 py-3">Price</th>
                 <th className="text-left px-4 py-3">Fuel</th>
+                <th className="text-left px-4 py-3">Added By Name</th>
+                <th className="text-left px-4 py-3">Added By Email</th>
                 <th className="text-left px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredCars.map((car) => (
+              {filteredCars.map((car) => {
+                const addedBy = getCarAddedByDetails(car);
+
+                return (
                 <tr key={car._id} className="border-t border-gray-100">
                   <td className="px-4 py-4 font-semibold text-slate-800">{car.brand || "-"}</td>
                   <td className="px-4 py-4 text-gray-700">{car.model || "-"}</td>
                   <td className="px-4 py-4 text-gray-600">{car.year || "-"}</td>
                   <td className="px-4 py-4 text-gray-600">{car.price || "-"}</td>
                   <td className="px-4 py-4 text-gray-600">{car.fuelType || "-"}</td>
+                  <td className="px-4 py-4 text-gray-600">{addedBy.name}</td>
+                  <td className="px-4 py-4 text-gray-600">{addedBy.email}</td>
                   <td className="px-4 py-3 flex gap-2">
                     <button
                       onClick={() => startEdit(car)}
@@ -237,10 +267,10 @@ export const AdminCars = () => {
                     </button>
                   </td>
                 </tr>
-              ))}
+              );})}
               {filteredCars.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-6 text-center text-gray-500">
                     No cars found
                   </td>
                 </tr>
