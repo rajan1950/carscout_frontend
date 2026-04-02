@@ -1,4 +1,5 @@
-import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Navigate, RouterProvider, createBrowserRouter, useLocation } from "react-router-dom";
+import { isAuthenticated } from "../utils/auth";
 
 // 🔹 Seller / Home
 import Home from "../pages/seller/Home";
@@ -41,6 +42,16 @@ import {
   AdminWishlists,
 } from "../components/admin";
 
+const AuthRouteGuard = ({ children }) => {
+  const location = useLocation();
+
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  return children;
+};
+
 const router = createBrowserRouter([
   // 🔥 HOME
   {
@@ -49,7 +60,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/services",
-    element: <Services />,
+    element: (
+      <AuthRouteGuard>
+        <Services />
+      </AuthRouteGuard>
+    ),
   },
 
   // 🔐 AUTH
@@ -73,23 +88,39 @@ const router = createBrowserRouter([
   // 👤 USER
   {
     path: "/profile",
-    element: <ProfilePage />,
+    element: (
+      <AuthRouteGuard>
+        <ProfilePage />
+      </AuthRouteGuard>
+    ),
   },
   {
     path: "/notifications",
-    element: <NotificationsPage />,
+    element: (
+      <AuthRouteGuard>
+        <NotificationsPage />
+      </AuthRouteGuard>
+    ),
   },
 
   // 🚗 BUY
   {
     path: "/buy/:carId",
-    element: <BuyCarPage />,
+    element: (
+      <AuthRouteGuard>
+        <BuyCarPage />
+      </AuthRouteGuard>
+    ),
   },
 
   // 👥 CUSTOMER
   {
     path: "/customer",
-    element: <CustomerNavbar />,
+    element: (
+      <AuthRouteGuard>
+        <CustomerNavbar />
+      </AuthRouteGuard>
+    ),
     children: [
       {
         index: true,
