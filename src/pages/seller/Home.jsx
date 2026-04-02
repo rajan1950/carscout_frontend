@@ -8,14 +8,15 @@ import {
   FaGasPump,
   FaRoad,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import UserNavbar from "../../layouts/UserNavbar";
-import { isAdminAuthenticated } from "../../utils/auth";
+import { isAdminAuthenticated, isAuthenticated } from "../../utils/auth";
 import SellCarModel from "../../components/seller/SellCarModel";
 import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
 
 const Home = () => {
+  const navigate = useNavigate();
   const MotionH1 = motion.h1;
   const MotionP = motion.p;
   const MotionDiv = motion.div;
@@ -111,6 +112,15 @@ const Home = () => {
 
   const featuredCars = visibleCars.slice(0, 9);
 
+  const handleSellCarClick = () => {
+    if (!isAuthenticated()) {
+      navigate("/login");
+      return;
+    }
+
+    setIsSellWizardOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f5f0e8_0%,_#f8f7f3_35%,_#eff3f4_100%)] text-slate-900">
       <UserNavbar />
@@ -152,7 +162,7 @@ const Home = () => {
               </Link>
               <button
                 type="button"
-                onClick={() => setIsSellWizardOpen(true)}
+                onClick={handleSellCarClick}
                 className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full text-sm font-semibold"
               >
                 Start Selling <FaArrowRight />
@@ -245,7 +255,7 @@ const Home = () => {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => setIsSellWizardOpen(true)}
+                  onClick={handleSellCarClick}
                   className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-full text-sm font-semibold"
                 >
                   Sell Car
@@ -292,7 +302,7 @@ const Home = () => {
             </div>
             <button
               type="button"
-              onClick={() => setIsSellWizardOpen(true)}
+              onClick={handleSellCarClick}
               className="inline-flex items-center gap-2 mt-5 bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold"
             >
               Go To Sell Car Form <FaArrowRight />
@@ -376,7 +386,7 @@ const Home = () => {
               <Link to="/customer" className="block hover:text-white transition">Browse Cars</Link>
               <button
                 type="button"
-                onClick={() => setIsSellWizardOpen(true)}
+                onClick={handleSellCarClick}
                 className="text-left hover:text-white transition"
               >
                 Sell Your Car
