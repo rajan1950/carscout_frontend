@@ -2,6 +2,7 @@ import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
 
 // 🔹 Seller / Home
 import Home from "../pages/seller/Home";
+import Services from "../pages/seller/Services";
 
 // 🔹 Auth Pages
 import { Login } from "../pages/auth/Login";
@@ -45,6 +46,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
+  },
+  {
+    path: "/services",
+    element: <Services />,
   },
 
   // 🔐 AUTH
