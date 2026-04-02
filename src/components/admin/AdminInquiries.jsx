@@ -11,6 +11,34 @@ const initialForm = {
   message: "",
 };
 
+const getDateFromObjectId = (id) => {
+  const value = String(id || "");
+
+  if (!/^[a-f\d]{24}$/i.test(value)) {
+    return null;
+  }
+
+  const timestampSeconds = parseInt(value.substring(0, 8), 16);
+  const parsed = new Date(timestampSeconds * 1000);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+};
+
+const normalizeInquiryDate = (inquiry, fallbackDate = null) => {
+  if (!inquiry || typeof inquiry !== "object") {
+    return inquiry;
+  }
+
+  if (inquiry.createdAt || inquiry.updatedAt || inquiry.date) {
+    return inquiry;
+  }
+
+  return {
+    ...inquiry,
+    createdAt: fallbackDate || getDateFromObjectId(inquiry._id) || null,
+  };
+};
+
 export const AdminInquiries = () => {
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +52,8 @@ export const AdminInquiries = () => {
   const fetchInquiries = async () => {
     try {
       const res = await axios.get(`${ADMIN_BASE_URL}/inquiries`);
-      setInquiries(Array.isArray(res.data) ? res.data : []);
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setInquiries(rows.map((item) => normalizeInquiryDate(item)));
       setError("");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load inquiries");
@@ -75,9 +104,10 @@ export const AdminInquiries = () => {
         );
         const updatedInquiry = res.data;
         if (updatedInquiry?._id) {
+          const normalizedUpdated = normalizeInquiryDate(updatedInquiry, new Date().toISOString());
           setInquiries((prev) =>
             prev.map((item) =>
-              item._id === updatedInquiry._id ? updatedInquiry : item
+              item._id === normalizedUpdated._id ? normalizedUpdated : item
             )
           );
         } else {
@@ -88,7 +118,8 @@ export const AdminInquiries = () => {
         const res = await axios.post(`${INQUIRY_BASE_URL}/create`, form);
         const createdInquiry = res.data;
         if (createdInquiry?._id) {
-          setInquiries((prev) => [createdInquiry, ...prev]);
+          const normalizedCreated = normalizeInquiryDate(createdInquiry, new Date().toISOString());
+          setInquiries((prev) => [normalizedCreated, ...prev]);
         } else {
           fetchInquiries();
         }
@@ -141,6 +172,24 @@ export const AdminInquiries = () => {
     );
   });
 
+  const formatInquiryDate = (inquiry) => {
+    const rawDate = inquiry?.createdAt || inquiry?.updatedAt || inquiry?.date;
+    if (!rawDate) {
+      return "-";
+    }
+
+    const parsed = new Date(rawDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return "-";
+    }
+
+    return parsed.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <div>
       <h2 className="text-4xl font-bold text-slate-800 mb-8">Inquiry Management</h2>
@@ -173,6 +222,7 @@ export const AdminInquiries = () => {
                 <th className="text-left px-4 py-3">Name</th>
                 <th className="text-left px-4 py-3">Email</th>
                 <th className="text-left px-4 py-3">Message</th>
+                <th className="text-left px-4 py-3">Date</th>
                 <th className="text-left px-4 py-3">Actions</th>
               </tr>
             </thead>
@@ -182,6 +232,7 @@ export const AdminInquiries = () => {
                   <td className="px-4 py-4 font-semibold text-slate-800">{inquiry.name || "-"}</td>
                   <td className="px-4 py-4 text-gray-600">{inquiry.email || "-"}</td>
                   <td className="px-4 py-4 text-gray-700">{inquiry.message || "-"}</td>
+                  <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{formatInquiryDate(inquiry)}</td>
                   <td className="px-4 py-3 flex gap-2">
                     <button
                       onClick={() => startEdit(inquiry)}
@@ -200,7 +251,7 @@ export const AdminInquiries = () => {
               ))}
               {filteredInquiries.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={5} className="px-4 py-6 text-center text-gray-500">
                     No inquiries found
                   </td>
                 </tr>
