@@ -166,12 +166,6 @@ export const CustomerHome = () => {
     let items = [...cars];
     const normalizedQuery = query.trim().toLowerCase();
 
-    // Keep buyer inventory focused on cars not already in wishlist.
-    items = items.filter((car) => !favorites.includes(car._id));
-
-    // Hide purchased cars from buyer inventory.
-    items = items.filter((car) => !purchasedCarIds.includes(car._id));
-
     if (normalizedQuery) {
       items = items.filter((car) =>
         `${car.brand || ""} ${car.model || ""} ${car.year || ""}`
@@ -197,7 +191,7 @@ export const CustomerHome = () => {
     }
 
     return items;
-  }, [cars, query, fuelFilter, sortBy, favorites, purchasedCarIds]);
+  }, [cars, query, fuelFilter, sortBy]);
 
   const inventoryValue = useMemo(
     () => cars.reduce((sum, car) => sum + Number(car.price || 0), 0),
@@ -461,7 +455,7 @@ export const CustomerHome = () => {
         <section className="rounded-2xl border border-cyan-100 bg-cyan-50/60 p-5 mb-6">
           <h2 className="text-2xl font-black text-slate-900">Wishlist View</h2>
           <p className="text-slate-600 mt-1">
-            Cars in wishlist are hidden from Buyer Dashboard inventory until removed.
+            Manage your saved wishlist cars here while inventory stays consistent with home listings.
           </p>
         </section>
       )}
