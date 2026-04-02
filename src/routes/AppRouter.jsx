@@ -1,7 +1,28 @@
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
+
+// 🔹 Seller / Home
+import Home from "../pages/seller/Home";
+
+// 🔹 Auth Pages
+import { Login } from "../pages/auth/Login";
+import { Signup } from "../pages/auth/Signup";
+import { ForgotPassword } from "../pages/auth/forgotpassword";
+import { ResetPassword } from "../pages/auth/ResetPassword";
+
+// 🔹 Common Pages
+import ProfilePage from "../pages/ProfilePage";
+import NotificationsPage from "../pages/NotificationsPage";
+import Found404 from "../pages/404Found";
+
+// 🔹 Buyer
 import { BuyCarPage } from "../components/buyer/BuyCarPage";
 import { CompareInsightsPage } from "../components/buyer/CompareInsightsPage";
+
+// 🔹 Customer
 import { CustomerHome } from "../components/customer";
+import { CustomerNavbar } from "../layouts/CustomerNavbar";
+
+// 🔹 Admin
 import {
   AdminCars,
   AdminDashboard,
@@ -18,21 +39,15 @@ import {
   AdminUsers,
   AdminWishlists,
 } from "../components/admin";
-import { CustomerNavbar } from "../layouts/CustomerNavbar";
-import Found404 from "../pages/404Found";
-import NotificationsPage from "../pages/NotificationsPage";
-import ProfilePage from "../pages/ProfilePage";
-import { ForgotPassword } from "../pages/auth/forgotpassword";
-import { Login } from "../pages/auth/Login";
-import { ResetPassword } from "../pages/auth/ResetPassword";
-import { Signup } from "../pages/auth/Signup";
-import Home from "../pages/seller/Home";
 
 const router = createBrowserRouter([
+  // 🔥 HOME
   {
     path: "/",
     element: <Home />,
   },
+
+  // 🔐 AUTH
   {
     path: "/login",
     element: <Login />,
@@ -49,6 +64,8 @@ const router = createBrowserRouter([
     path: "/resetpassword/:token",
     element: <ResetPassword />,
   },
+
+  // 👤 USER
   {
     path: "/profile",
     element: <ProfilePage />,
@@ -57,10 +74,14 @@ const router = createBrowserRouter([
     path: "/notifications",
     element: <NotificationsPage />,
   },
+
+  // 🚗 BUY
   {
     path: "/buy/:carId",
     element: <BuyCarPage />,
   },
+
+  // 👥 CUSTOMER
   {
     path: "/customer",
     element: <CustomerNavbar />,
@@ -75,6 +96,8 @@ const router = createBrowserRouter([
       },
     ],
   },
+
+  // 🛠️ ADMIN
   {
     path: "/adminpanel",
     element: (
@@ -83,56 +106,22 @@ const router = createBrowserRouter([
       </AdminRouteGuard>
     ),
     children: [
-      {
-        index: true,
-        element: <AdminDefaultRoute />,
-      },
-      {
-        path: "dashboard",
-        element: <AdminDashboard />,
-      },
-      {
-        path: "users",
-        element: <AdminUsers />,
-      },
-      {
-        path: "cars",
-        element: <AdminCars />,
-      },
-      {
-        path: "inquiries",
-        element: <AdminInquiries />,
-      },
-      {
-        path: "messages",
-        element: <AdminMessages />,
-      },
-      {
-        path: "reviews",
-        element: <AdminReviews />,
-      },
-      {
-        path: "reports",
-        element: <AdminReports />,
-      },
-      {
-        path: "testdrives",
-        element: <AdminTestDrives />,
-      },
-      {
-        path: "wishlists",
-        element: <AdminWishlists />,
-      },
-      {
-        path: "purchases",
-        element: <AdminPurchases />,
-      },
-      {
-        path: "settings",
-        element: <AdminSettings />,
-      },
+      { index: true, element: <AdminDefaultRoute /> },
+      { path: "dashboard", element: <AdminDashboard /> },
+      { path: "users", element: <AdminUsers /> },
+      { path: "cars", element: <AdminCars /> },
+      { path: "inquiries", element: <AdminInquiries /> },
+      { path: "messages", element: <AdminMessages /> },
+      { path: "reviews", element: <AdminReviews /> },
+      { path: "reports", element: <AdminReports /> },
+      { path: "testdrives", element: <AdminTestDrives /> },
+      { path: "wishlists", element: <AdminWishlists /> },
+      { path: "purchases", element: <AdminPurchases /> },
+      { path: "settings", element: <AdminSettings /> },
     ],
   },
+
+  // ❌ ERROR
   {
     path: "/404",
     element: <Found404 />,
