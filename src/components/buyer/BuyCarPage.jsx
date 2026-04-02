@@ -71,6 +71,64 @@ const stepLabels = [
   "Confirmation",
 ];
 
+const ID_TYPE_CONFIG = {
+  Aadhaar: {
+    placeholder: "Aadhaar Number (12 digits)",
+    hint: "Enter 12 digits as per government ID.",
+    maxLength: 12,
+    normalize: (value) => String(value || "").replace(/\D/g, "").slice(0, 12),
+    validate: (value) => /^\d{12}$/.test(value),
+    error: "Enter a valid 12-digit Aadhaar number",
+  },
+  PAN: {
+    placeholder: "PAN Number (ABCDE1234F)",
+    hint: "Format: 5 letters + 4 digits + 1 letter.",
+    maxLength: 10,
+    normalize: (value) => String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10),
+    validate: (value) => /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(value),
+    error: "Enter a valid PAN number (example: ABCDE1234F)",
+  },
+  Passport: {
+    placeholder: "Passport Number (A1234567)",
+    hint: "Format: 1 letter followed by 7 digits.",
+    maxLength: 8,
+    normalize: (value) => String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8),
+    validate: (value) => /^[A-Z][0-9]{7}$/.test(value),
+    error: "Enter a valid passport number (example: A1234567)",
+  },
+  "Driving License": {
+    placeholder: "Driving License Number",
+    hint: "Format: state code + RTO + serial digits (example: MH1220230012345).",
+    maxLength: 16,
+    normalize: (value) => String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 16),
+    validate: (value) => /^[A-Z]{2}[0-9]{2}[0-9]{11,12}$/.test(value),
+    error: "Enter a valid Indian driving license number",
+  },
+};
+
+const PAYMENT_METHOD_CONFIG = {
+  full: {
+    label: "Full Payment",
+    requiresDownPayment: false,
+    minPercent: 100,
+    maxPercent: 100,
+  },
+  emi: {
+    label: "EMI Plan",
+    requiresDownPayment: true,
+    minPercent: 10,
+    maxPercent: 60,
+  },
+  loan: {
+    label: "Bank Loan",
+    requiresDownPayment: true,
+    minPercent: 15,
+    maxPercent: 50,
+  },
+};
+
+const PAYMENT_TENURE_OPTIONS = [12, 24, 36, 48, 60, 72, 84];
+
 export const BuyCarPage = () => {
   const navigate = useNavigate();
   const { carId } = useParams();
@@ -96,13 +154,15 @@ export const BuyCarPage = () => {
     address: profile.address || "",
     city: profile.city || "",
     pinCode: profile.pinCode || "",
-    idType: "Aadhar",
+    idType: "Aadhaar",
     idNumber: "",
   });
 
   const [paymentForm, setPaymentForm] = useState({
-    paymentMethod: "loan",
+    paymentMethod: "full",
     downPayment: "",
+    tenureMonths: "60",
+    preferredBank: "",
     agreeTerms: false,
   });
 
@@ -134,8 +194,12 @@ export const BuyCarPage = () => {
   }, [carId]);
 
   const amount = useMemo(() => Number(car?.price || 0), [car]);
+  const paymentConfig = PAYMENT_METHOD_CONFIG[paymentForm.paymentMethod] || PAYMENT_METHOD_CONFIG.full;
+  const minDownPaymentAmount = Math.ceil((amount * paymentConfig.minPercent) / 100);
+  const maxDownPaymentAmount = Math.floor((amount * paymentConfig.maxPercent) / 100);
   const downPaymentAmount = Number(paymentForm.downPayment || 0);
-  const remainingAmount = Math.max(amount - downPaymentAmount, 0);
+  const effectiveDownPayment = paymentForm.paymentMethod === "full" ? amount : downPaymentAmount;
+  const remainingAmount = Math.max(amount - effectiveDownPayment, 0);
 
   const updateBuyerForm = (event) => {
     const { name, value } = event.target;
@@ -145,12 +209,45 @@ export const BuyCarPage = () => {
 
   const updateDeliveryForm = (event) => {
     const { name, value } = event.target;
+
+    if (name === "idType") {
+      setDeliveryForm((prev) => ({ ...prev, idType: value, idNumber: "" }));
+      setFieldErrors((prev) => ({ ...prev, idType: "", idNumber: "" }));
+      return;
+    }
+
+    if (name === "idNumber") {
+      const idConfig = ID_TYPE_CONFIG[deliveryForm.idType] || ID_TYPE_CONFIG.Aadhaar;
+      const normalized = idConfig.normalize(value);
+      setDeliveryForm((prev) => ({ ...prev, idNumber: normalized }));
+      setFieldErrors((prev) => ({ ...prev, idNumber: "" }));
+      return;
+    }
+
     setDeliveryForm((prev) => ({ ...prev, [name]: value }));
     setFieldErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const updatePaymentForm = (event) => {
     const { name, value, type, checked } = event.target;
+
+    if (name === "paymentMethod") {
+      setPaymentForm((prev) => ({
+        ...prev,
+        paymentMethod: value,
+        downPayment: value === "full" ? "" : prev.downPayment,
+        preferredBank: value === "loan" ? prev.preferredBank : "",
+      }));
+      setFieldErrors((prev) => ({
+        ...prev,
+        paymentMethod: "",
+        downPayment: "",
+        tenureMonths: "",
+        preferredBank: "",
+      }));
+      return;
+    }
+
     setPaymentForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -178,6 +275,9 @@ export const BuyCarPage = () => {
     }
 
     if (step === 2) {
+      const idConfig = ID_TYPE_CONFIG[deliveryForm.idType] || ID_TYPE_CONFIG.Aadhaar;
+      const normalizedId = idConfig.normalize(deliveryForm.idNumber);
+
       if (!deliveryForm.address.trim()) {
         errors.address = "Delivery address is required";
       }
@@ -189,8 +289,14 @@ export const BuyCarPage = () => {
       } else if (!/^\d{6}$/.test(deliveryForm.pinCode.trim())) {
         errors.pinCode = "Enter a valid 6-digit pin code";
       }
-      if (!deliveryForm.idNumber.trim()) {
+      if (!normalizedId) {
         errors.idNumber = "ID number is required";
+      } else if (!idConfig.validate(normalizedId)) {
+        errors.idNumber = idConfig.error;
+      }
+
+      if (normalizedId && normalizedId !== deliveryForm.idNumber) {
+        setDeliveryForm((prev) => ({ ...prev, idNumber: normalizedId }));
       }
     }
 
@@ -199,12 +305,22 @@ export const BuyCarPage = () => {
         errors.paymentMethod = "Payment method is required";
       }
 
-      if (paymentForm.paymentMethod !== "full" && downPaymentAmount <= 0) {
-        errors.downPayment = "Down payment is required";
+      if (paymentConfig.requiresDownPayment) {
+        if (!paymentForm.downPayment || downPaymentAmount <= 0) {
+          errors.downPayment = "Down payment is required";
+        } else if (downPaymentAmount < minDownPaymentAmount) {
+          errors.downPayment = `Minimum down payment is ${formatPrice(minDownPaymentAmount)}`;
+        } else if (downPaymentAmount > maxDownPaymentAmount) {
+          errors.downPayment = `Maximum down payment is ${formatPrice(maxDownPaymentAmount)}`;
+        }
+
+        if (!paymentForm.tenureMonths) {
+          errors.tenureMonths = "Select a tenure for this payment plan";
+        }
       }
 
-      if (paymentForm.paymentMethod !== "full" && downPaymentAmount > amount) {
-        errors.downPayment = "Down payment cannot be greater than car price";
+      if (paymentForm.paymentMethod === "loan" && !paymentForm.preferredBank.trim()) {
+        errors.preferredBank = "Preferred bank name is required for bank loan";
       }
 
       if (!paymentForm.agreeTerms) {
@@ -254,8 +370,11 @@ export const BuyCarPage = () => {
         carSnapshot: car,
         totalAmount: amount,
         paymentMethod: paymentForm.paymentMethod,
+        paymentLabel: paymentConfig.label,
         downPayment: paymentForm.paymentMethod === "full" ? amount : downPaymentAmount,
-        remainingAmount: paymentForm.paymentMethod === "full" ? 0 : remainingAmount,
+        remainingAmount,
+        tenureMonths: paymentConfig.requiresDownPayment ? Number(paymentForm.tenureMonths || 0) : null,
+        preferredBank: paymentForm.paymentMethod === "loan" ? paymentForm.preferredBank.trim() : null,
         buyer: buyerForm,
         delivery: deliveryForm,
         status: "order_placed",
@@ -441,7 +560,7 @@ export const BuyCarPage = () => {
                   onChange={updateDeliveryForm}
                   className="w-full border border-slate-300 rounded-xl px-4 py-3"
                 >
-                  <option value="Aadhar">Aadhar</option>
+                  <option value="Aadhaar">Aadhaar</option>
                   <option value="PAN">PAN</option>
                   <option value="Passport">Passport</option>
                   <option value="Driving License">Driving License</option>
@@ -450,10 +569,14 @@ export const BuyCarPage = () => {
                   name="idNumber"
                   value={deliveryForm.idNumber}
                   onChange={updateDeliveryForm}
-                  placeholder="ID Number"
+                  placeholder={(ID_TYPE_CONFIG[deliveryForm.idType] || ID_TYPE_CONFIG.Aadhaar).placeholder}
+                  maxLength={(ID_TYPE_CONFIG[deliveryForm.idType] || ID_TYPE_CONFIG.Aadhaar).maxLength}
                   className={`w-full border rounded-xl px-4 py-3 ${fieldErrors.idNumber ? "border-red-400" : "border-slate-300"}`}
                 />
               </div>
+              <p className="text-xs text-slate-500">
+                {(ID_TYPE_CONFIG[deliveryForm.idType] || ID_TYPE_CONFIG.Aadhaar).hint}
+              </p>
               {fieldErrors.idNumber ? <p className="text-xs text-red-600">{fieldErrors.idNumber}</p> : null}
             </div>
           )}
@@ -467,22 +590,63 @@ export const BuyCarPage = () => {
                 onChange={updatePaymentForm}
                 className={`w-full border rounded-xl px-4 py-3 ${fieldErrors.paymentMethod ? "border-red-400" : "border-slate-300"}`}
               >
-                <option value="loan">Bank Loan</option>
-                <option value="emi">EMI Plan</option>
                 <option value="full">Full Payment</option>
+                <option value="emi">EMI Plan</option>
+                <option value="loan">Bank Loan</option>
               </select>
               {fieldErrors.paymentMethod ? <p className="text-xs text-red-600">{fieldErrors.paymentMethod}</p> : null}
 
-              {paymentForm.paymentMethod !== "full" && (
-                <input
-                  name="downPayment"
-                  type="number"
-                  value={paymentForm.downPayment}
-                  onChange={updatePaymentForm}
-                  placeholder="Down Payment Amount"
-                  className={`w-full border rounded-xl px-4 py-3 ${fieldErrors.downPayment ? "border-red-400" : "border-slate-300"}`}
-                />
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                <p className="font-semibold text-slate-900">{paymentConfig.label}</p>
+                {paymentConfig.requiresDownPayment ? (
+                  <p className="mt-1">
+                    Down payment range: {formatPrice(minDownPaymentAmount)} to {formatPrice(maxDownPaymentAmount)}
+                  </p>
+                ) : (
+                  <p className="mt-1">No EMI or loan processing. Full amount payable at confirmation.</p>
+                )}
+              </div>
+
+              {paymentConfig.requiresDownPayment && (
+                <>
+                  <input
+                    name="downPayment"
+                    type="number"
+                    min={minDownPaymentAmount}
+                    max={maxDownPaymentAmount}
+                    value={paymentForm.downPayment}
+                    onChange={updatePaymentForm}
+                    placeholder="Down Payment Amount"
+                    className={`w-full border rounded-xl px-4 py-3 ${fieldErrors.downPayment ? "border-red-400" : "border-slate-300"}`}
+                  />
+
+                  <select
+                    name="tenureMonths"
+                    value={paymentForm.tenureMonths}
+                    onChange={updatePaymentForm}
+                    className={`w-full border rounded-xl px-4 py-3 ${fieldErrors.tenureMonths ? "border-red-400" : "border-slate-300"}`}
+                  >
+                    {PAYMENT_TENURE_OPTIONS.map((months) => (
+                      <option key={months} value={String(months)}>{months} months</option>
+                    ))}
+                  </select>
+                  {fieldErrors.tenureMonths ? <p className="text-xs text-red-600">{fieldErrors.tenureMonths}</p> : null}
+                </>
               )}
+
+              {paymentForm.paymentMethod === "loan" && (
+                <>
+                  <input
+                    name="preferredBank"
+                    value={paymentForm.preferredBank}
+                    onChange={updatePaymentForm}
+                    placeholder="Preferred Bank Name"
+                    className={`w-full border rounded-xl px-4 py-3 ${fieldErrors.preferredBank ? "border-red-400" : "border-slate-300"}`}
+                  />
+                  {fieldErrors.preferredBank ? <p className="text-xs text-red-600">{fieldErrors.preferredBank}</p> : null}
+                </>
+              )}
+
               {fieldErrors.downPayment ? <p className="text-xs text-red-600">{fieldErrors.downPayment}</p> : null}
 
               <label className="inline-flex items-center gap-2 text-sm text-slate-700">
@@ -506,9 +670,16 @@ export const BuyCarPage = () => {
                 <p><span className="font-semibold">Email:</span> {buyerForm.email}</p>
                 <p><span className="font-semibold">Mobile:</span> {buyerForm.mobile}</p>
                 <p><span className="font-semibold">Delivery:</span> {deliveryForm.address}, {deliveryForm.city} - {deliveryForm.pinCode}</p>
-                <p><span className="font-semibold">Payment:</span> {paymentForm.paymentMethod.toUpperCase()}</p>
-                <p><span className="font-semibold">Down Payment:</span> {formatPrice(paymentForm.paymentMethod === "full" ? amount : downPaymentAmount)}</p>
-                <p><span className="font-semibold">Remaining:</span> {formatPrice(paymentForm.paymentMethod === "full" ? 0 : remainingAmount)}</p>
+                <p><span className="font-semibold">Document:</span> {deliveryForm.idType} - {deliveryForm.idNumber}</p>
+                <p><span className="font-semibold">Payment:</span> {paymentConfig.label}</p>
+                {paymentConfig.requiresDownPayment ? (
+                  <p><span className="font-semibold">Tenure:</span> {paymentForm.tenureMonths} months</p>
+                ) : null}
+                {paymentForm.paymentMethod === "loan" ? (
+                  <p><span className="font-semibold">Preferred Bank:</span> {paymentForm.preferredBank}</p>
+                ) : null}
+                <p><span className="font-semibold">Down Payment:</span> {formatPrice(effectiveDownPayment)}</p>
+                <p><span className="font-semibold">Remaining:</span> {formatPrice(remainingAmount)}</p>
               </div>
             </div>
           )}
@@ -596,9 +767,12 @@ export const BuyCarPage = () => {
 
           <div className="mt-4 rounded-xl border border-cyan-100 bg-cyan-50 p-3 text-sm text-slate-700">
             <p className="font-semibold text-cyan-800">Checkout Summary</p>
-            <p className="mt-1">Method: {paymentForm.paymentMethod.toUpperCase()}</p>
-            <p>Down Payment: {formatPrice(paymentForm.paymentMethod === "full" ? amount : downPaymentAmount)}</p>
-            <p>Balance: {formatPrice(paymentForm.paymentMethod === "full" ? 0 : remainingAmount)}</p>
+            <p className="mt-1">Method: {paymentConfig.label}</p>
+            {paymentConfig.requiresDownPayment ? (
+              <p>Tenure: {paymentForm.tenureMonths} months</p>
+            ) : null}
+            <p>Down Payment: {formatPrice(effectiveDownPayment)}</p>
+            <p>Balance: {formatPrice(remainingAmount)}</p>
           </div>
         </aside>
       </div>
