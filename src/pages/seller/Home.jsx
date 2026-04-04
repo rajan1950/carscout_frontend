@@ -15,6 +15,19 @@ import { isAdminAuthenticated, isAuthenticated } from "../../utils/auth";
 import SellCarModel from "../../components/seller/SellCarModel";
 import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
 
+const PURCHASED_CAR_STORAGE_KEY = "carscout.purchasedCarIds";
+const PURCHASED_CARS_UPDATED_EVENT = "carscout-purchased-cars-updated";
+
+const readPurchasedCarIds = () => {
+  try {
+    const raw = localStorage.getItem(PURCHASED_CAR_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 const Home = () => {
   const navigate = useNavigate();
   const MotionH1 = motion.h1;
@@ -24,6 +37,7 @@ const Home = () => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [purchasedCarIds, setPurchasedCarIds] = useState(() => readPurchasedCarIds());
   const [query, setQuery] = useState("");
   const [fuelFilter, setFuelFilter] = useState("all");
   const [priceSort, setPriceSort] = useState("default");
@@ -73,8 +87,28 @@ const Home = () => {
     fetchHomeData();
   }, []);
 
+  useEffect(() => {
+    const syncPurchasedCars = () => {
+      setPurchasedCarIds(readPurchasedCarIds());
+    };
+
+    syncPurchasedCars();
+    window.addEventListener("storage", syncPurchasedCars);
+    window.addEventListener(PURCHASED_CARS_UPDATED_EVENT, syncPurchasedCars);
+
+    return () => {
+      window.removeEventListener("storage", syncPurchasedCars);
+      window.removeEventListener(PURCHASED_CARS_UPDATED_EVENT, syncPurchasedCars);
+    };
+  }, []);
+
+  const availableCars = useMemo(
+    () => cars.filter((car) => !purchasedCarIds.includes(car._id)),
+    [cars, purchasedCarIds]
+  );
+
   const visibleCars = useMemo(() => {
-    let items = [...cars];
+    let items = [...availableCars];
 
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -99,7 +133,7 @@ const Home = () => {
     }
 
     return items;
-  }, [cars, query, fuelFilter, priceSort]);
+  }, [availableCars, query, fuelFilter, priceSort]);
 
   const formatPrice = (price) => {
     const numeric = Number(price || 0);
@@ -178,7 +212,7 @@ const Home = () => {
             <div className="grid sm:grid-cols-3 gap-3 mt-8">
               <div className="rounded-xl bg-white/90 border border-slate-200 px-4 py-3">
                 <p className="text-xs uppercase tracking-wide text-slate-500">Available Cars</p>
-                <p className="text-2xl font-black text-slate-900">{platformStats.cars}</p>
+                <p className="text-2xl font-black text-slate-900">{availableCars.length}</p>
               </div>
               <div className="rounded-xl bg-white/90 border border-slate-200 px-4 py-3">
                 <p className="text-xs uppercase tracking-wide text-slate-500">Buyer Activity</p>
