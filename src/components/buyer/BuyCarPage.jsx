@@ -7,6 +7,7 @@ import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage
 import { useNotifications } from "../../hooks/useNotifications";
 import { createNotificationForUser } from "../../services/notificationService";
 import { removeFromWishlistApi } from "../../services/wishlistService";
+import { sendTransactionalEmailApi } from "../../services/emailService";
 import { buildPurchaseSuccessMailTemplate } from "../../utils/mailTemplates";
 
 const PURCHASE_STORAGE_KEY = "carscout.purchases";
@@ -399,10 +400,33 @@ export const BuyCarPage = () => {
         html: purchaseMailTemplate.html,
       };
 
-      order.mailDeliveryStatus = "disabled";
+      order.mailDeliveryStatus = "pending";
 
       // Keep purchased cars hidden in buyer inventory even if delete API is restricted.
       addPurchasedCarId(car._id);
+
+      if (order.mailTemplate.to) {
+        try {
+          await sendTransactionalEmailApi({
+            to: order.mailTemplate.to,
+            subject: order.mailTemplate.subject,
+            text: order.mailTemplate.text,
+            html: order.mailTemplate.html,
+            template: "purchase-success",
+            metadata: {
+              orderId: order.id,
+              carId: order.carId,
+              userId: order.userId,
+            },
+          });
+          order.mailDeliveryStatus = "sent";
+        } catch {
+          order.mailDeliveryStatus = "failed";
+        }
+      } else {
+        order.mailDeliveryStatus = "skipped";
+      }
+
       savePurchase(order);
 
       if (userId) {
