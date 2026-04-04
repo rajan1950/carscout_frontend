@@ -162,8 +162,13 @@ export const CustomerHome = () => {
     };
   }, []);
 
+  const availableCars = useMemo(
+    () => cars.filter((car) => !purchasedCarIds.includes(car._id)),
+    [cars, purchasedCarIds]
+  );
+
   const filteredCars = useMemo(() => {
-    let items = [...cars];
+    let items = [...availableCars];
     const normalizedQuery = query.trim().toLowerCase();
 
     if (normalizedQuery) {
@@ -191,11 +196,11 @@ export const CustomerHome = () => {
     }
 
     return items;
-  }, [cars, query, fuelFilter, sortBy]);
+  }, [availableCars, query, fuelFilter, sortBy]);
 
   const inventoryValue = useMemo(
-    () => cars.reduce((sum, car) => sum + Number(car.price || 0), 0),
-    [cars]
+    () => availableCars.reduce((sum, car) => sum + Number(car.price || 0), 0),
+    [availableCars]
   );
 
   const toggleFavorite = async (carId) => {
@@ -359,7 +364,7 @@ export const CustomerHome = () => {
     }
   };
 
-  const favoriteCars = cars.filter(
+  const favoriteCars = availableCars.filter(
     (car) => favorites.includes(car._id) && !purchasedCarIds.includes(car._id)
   );
 
@@ -376,11 +381,11 @@ export const CustomerHome = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
           <div className="rounded-xl bg-white/10 border border-white/15 p-4">
             <p className="text-xs uppercase text-cyan-200">Total Cars</p>
-            <p className="text-2xl font-black">{cars.length}</p>
+            <p className="text-2xl font-black">{availableCars.length}</p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/15 p-4">
             <p className="text-xs uppercase text-cyan-200">Wishlist</p>
-            <p className="text-2xl font-black">{favorites.length}</p>
+            <p className="text-2xl font-black">{favoriteCars.length}</p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/15 p-4">
             <p className="text-xs uppercase text-cyan-200">Compare List</p>
