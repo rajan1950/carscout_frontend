@@ -420,11 +420,15 @@ export const BuyCarPage = () => {
             },
           });
           order.mailDeliveryStatus = "sent";
-        } catch {
+        } catch (mailError) {
           order.mailDeliveryStatus = "failed";
+          const detailedError = mailError?.message || "Email delivery failed";
+          order.mailDeliveryError = detailedError;
+          toast.warning(`Purchase completed, but email failed: ${detailedError}`);
         }
       } else {
         order.mailDeliveryStatus = "skipped";
+        order.mailDeliveryError = "Buyer email is missing";
       }
 
       savePurchase(order);
