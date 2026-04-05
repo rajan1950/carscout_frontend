@@ -8,35 +8,10 @@ import { useNotifications } from "../../hooks/useNotifications";
 import { createNotificationForUser } from "../../services/notificationService";
 import { removeFromWishlistApi } from "../../services/wishlistService";
 import { sendTransactionalEmailApi } from "../../services/emailService";
+import { syncPurchasedCarIdsFromPurchases } from "../../services/purchaseService";
 import { buildPurchaseSuccessMailTemplate } from "../../utils/mailTemplates";
 
 const PURCHASE_STORAGE_KEY = "carscout.purchases";
-const PURCHASED_CAR_STORAGE_KEY = "carscout.purchasedCarIds";
-const PURCHASED_CARS_UPDATED_EVENT = "carscout-purchased-cars-updated";
-
-const readPurchasedCarIds = () => {
-  try {
-    const raw = localStorage.getItem(PURCHASED_CAR_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-const addPurchasedCarId = (carId) => {
-  if (!carId) {
-    return;
-  }
-
-  const current = readPurchasedCarIds();
-  if (current.includes(carId)) {
-    return;
-  }
-
-  localStorage.setItem(PURCHASED_CAR_STORAGE_KEY, JSON.stringify([carId, ...current]));
-  window.dispatchEvent(new Event(PURCHASED_CARS_UPDATED_EVENT));
-};
 
 const readPurchases = () => {
   try {
@@ -402,9 +377,6 @@ export const BuyCarPage = () => {
 
       order.mailDeliveryStatus = "pending";
 
-      // Keep purchased cars hidden in buyer inventory even if delete API is restricted.
-      addPurchasedCarId(car._id);
-
       if (order.mailTemplate.to) {
         try {
           await sendTransactionalEmailApi({
@@ -432,6 +404,7 @@ export const BuyCarPage = () => {
       }
 
       savePurchase(order);
+      syncPurchasedCarIdsFromPurchases();
 
       if (userId) {
         try {
