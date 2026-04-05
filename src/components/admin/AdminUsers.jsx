@@ -1,9 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { readAuthSession } from "../../utils/auth";
 
 const ADMIN_BASE_URL = "http://localhost:4444/admin";
 const USER_BASE_URL = "http://localhost:4444/user";
+
+const getAuthHeaders = () => {
+  const token = readAuthSession()?.token;
+
+  if (!token) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
 
 const initialForm = {
   firstname: "",
@@ -28,7 +41,9 @@ export const AdminUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`${ADMIN_BASE_URL}/users`);
+      const res = await axios.get(`${ADMIN_BASE_URL}/users`, {
+        headers: getAuthHeaders(),
+      });
       setUsers(Array.isArray(res.data) ? res.data : []);
       setError("");
     } catch (err) {
@@ -40,7 +55,9 @@ export const AdminUsers = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${USER_BASE_URL}/getallusers/${id}`);
+      await axios.delete(`${USER_BASE_URL}/getallusers/${id}`, {
+        headers: getAuthHeaders(),
+      });
       toast.success("User deleted");
       setUsers((prev) => prev.filter((user) => user._id !== id));
     } catch (err) {
@@ -90,7 +107,10 @@ export const AdminUsers = () => {
 
         const res = await axios.put(
           `${USER_BASE_URL}/getallusers/${editingUserId}`,
-          payload
+          payload,
+          {
+            headers: getAuthHeaders(),
+          }
         );
 
         const updatedUser = res.data?.user;
@@ -114,7 +134,9 @@ export const AdminUsers = () => {
           role: form.role,
         };
 
-        const res = await axios.post(`${USER_BASE_URL}/register`, payload);
+        const res = await axios.post(`${USER_BASE_URL}/register`, payload, {
+          headers: getAuthHeaders(),
+        });
         const createdUser = res.data?.user;
 
         if (createdUser?._id) {
