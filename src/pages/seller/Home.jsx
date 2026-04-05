@@ -14,19 +14,11 @@ import UserNavbar from "../../layouts/UserNavbar";
 import { isAdminAuthenticated, isAuthenticated } from "../../utils/auth";
 import SellCarModel from "../../components/seller/SellCarModel";
 import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
-
-const PURCHASED_CAR_STORAGE_KEY = "carscout.purchasedCarIds";
-const PURCHASED_CARS_UPDATED_EVENT = "carscout-purchased-cars-updated";
-
-const readPurchasedCarIds = () => {
-  try {
-    const raw = localStorage.getItem(PURCHASED_CAR_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
+import {
+  getPurchasedCarIdsLocal,
+  PURCHASED_CARS_UPDATED_EVENT,
+  syncPurchasedCarIdsFromPurchases,
+} from "../../services/purchaseService";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -37,7 +29,7 @@ const Home = () => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [purchasedCarIds, setPurchasedCarIds] = useState(() => readPurchasedCarIds());
+  const [purchasedCarIds, setPurchasedCarIds] = useState(() => getPurchasedCarIdsLocal());
   const [query, setQuery] = useState("");
   const [fuelFilter, setFuelFilter] = useState("all");
   const [priceSort, setPriceSort] = useState("default");
@@ -89,9 +81,10 @@ const Home = () => {
 
   useEffect(() => {
     const syncPurchasedCars = () => {
-      setPurchasedCarIds(readPurchasedCarIds());
+      setPurchasedCarIds(getPurchasedCarIdsLocal());
     };
 
+    syncPurchasedCarIdsFromPurchases();
     syncPurchasedCars();
     window.addEventListener("storage", syncPurchasedCars);
     window.addEventListener(PURCHASED_CARS_UPDATED_EVENT, syncPurchasedCars);
