@@ -4,33 +4,10 @@ import { createNotificationForUser } from "../../services/notificationService";
 import {
   deletePurchaseLocal,
   getAllPurchasesLocal,
+  syncPurchasedCarIdsFromPurchases,
   updatePurchaseStatusLocal,
 } from "../../services/purchaseService";
 import { buildPurchaseStatusMailTemplate } from "../../utils/mailTemplates";
-
-const PURCHASED_CAR_STORAGE_KEY = "carscout.purchasedCarIds";
-const PURCHASED_CARS_UPDATED_EVENT = "carscout-purchased-cars-updated";
-
-const readPurchasedCarIds = () => {
-  try {
-    const raw = localStorage.getItem(PURCHASED_CAR_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-const restoreCarToBuyerDashboard = (carId) => {
-  if (!carId) {
-    return;
-  }
-
-  const current = readPurchasedCarIds();
-  const next = current.filter((id) => id !== carId);
-  localStorage.setItem(PURCHASED_CAR_STORAGE_KEY, JSON.stringify(next));
-  window.dispatchEvent(new Event(PURCHASED_CARS_UPDATED_EVENT));
-};
 
 const formatDate = (value) => {
   const date = value ? new Date(value) : null;
@@ -69,6 +46,7 @@ export const AdminPurchases = () => {
   };
 
   useEffect(() => {
+    syncPurchasedCarIdsFromPurchases();
     refreshPurchases();
 
     const syncPurchases = () => {
@@ -140,7 +118,7 @@ export const AdminPurchases = () => {
       }
 
       if (nextStatus === "cancelled") {
-        restoreCarToBuyerDashboard(purchase.carId);
+        syncPurchasedCarIdsFromPurchases();
       }
 
       refreshPurchases();
@@ -183,8 +161,6 @@ export const AdminPurchases = () => {
       return;
     }
 
-    restoreCarToBuyerDashboard(purchase.carId);
-
     const deleted = deletePurchaseLocal(purchase.id);
 
     if (!deleted) {
@@ -192,6 +168,7 @@ export const AdminPurchases = () => {
       return;
     }
 
+    syncPurchasedCarIdsFromPurchases();
     refreshPurchases();
     toast.success("Purchase record deleted");
   };
