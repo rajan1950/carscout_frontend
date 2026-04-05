@@ -1,4 +1,7 @@
 const PURCHASE_STORAGE_KEY = "carscout.purchases";
+const PURCHASED_CAR_STORAGE_KEY = "carscout.purchasedCarIds";
+
+export const PURCHASED_CARS_UPDATED_EVENT = "carscout-purchased-cars-updated";
 
 const parsePurchaseList = (raw) => {
   try {
@@ -12,6 +15,34 @@ const parsePurchaseList = (raw) => {
 export const getAllPurchasesLocal = () => {
   const raw = localStorage.getItem(PURCHASE_STORAGE_KEY);
   return parsePurchaseList(raw);
+};
+
+export const getPurchasedCarIdsLocal = () => {
+  try {
+    const raw = localStorage.getItem(PURCHASED_CAR_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const buildPurchasedCarIdsFromPurchases = (purchases = []) => {
+  const ids = purchases
+    .filter((item) => item?.carId && item?.status !== "cancelled")
+    .map((item) => item.carId);
+
+  return [...new Set(ids)];
+};
+
+export const syncPurchasedCarIdsFromPurchases = () => {
+  const purchases = getAllPurchasesLocal();
+  const nextIds = buildPurchasedCarIdsFromPurchases(purchases);
+
+  localStorage.setItem(PURCHASED_CAR_STORAGE_KEY, JSON.stringify(nextIds));
+  window.dispatchEvent(new Event(PURCHASED_CARS_UPDATED_EVENT));
+
+  return nextIds;
 };
 
 export const saveAllPurchasesLocal = (items) => {
