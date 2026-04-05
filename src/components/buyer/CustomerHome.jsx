@@ -9,30 +9,22 @@ import { useNotifications } from "../../hooks/useNotifications";
 import { createBookingApi } from "../../services/bookingService";
 import { createReportApi } from "../../services/reportService";
 import { addToWishlistApi, getUserWishlistApi, removeFromWishlistApi } from "../../services/wishlistService";
+import {
+  getPurchasedCarIdsLocal,
+  PURCHASED_CARS_UPDATED_EVENT,
+  syncPurchasedCarIdsFromPurchases,
+} from "../../services/purchaseService";
 import { FilterBar } from "./FilterBar";
 import { CompareSection } from "./CompareSection";
 import { FavoriteSection } from "./FavoriteSection";
 import { CarCard } from "./CarCard";
-import { CarModal } from "./CarModal";
 import { ActionModal } from "./ActionModal";
 
 const COMPARE_STORAGE_KEY = "carscout.compareList";
-const PURCHASED_CAR_STORAGE_KEY = "carscout.purchasedCarIds";
-const PURCHASED_CARS_UPDATED_EVENT = "carscout-purchased-cars-updated";
 
 const readCompareList = () => {
   try {
     const raw = localStorage.getItem(COMPARE_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-const readPurchasedCarIds = () => {
-  try {
-    const raw = localStorage.getItem(PURCHASED_CAR_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -63,7 +55,7 @@ export const CustomerHome = () => {
   const [selectedCar, setSelectedCar] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [compareList, setCompareList] = useState(() => readCompareList());
-  const [purchasedCarIds, setPurchasedCarIds] = useState(() => readPurchasedCarIds());
+  const [purchasedCarIds, setPurchasedCarIds] = useState(() => getPurchasedCarIdsLocal());
   const [actionType, setActionType] = useState(null);
   const [submittingAction, setSubmittingAction] = useState(false);
 
@@ -149,9 +141,10 @@ export const CustomerHome = () => {
 
   useEffect(() => {
     const syncPurchasedCars = () => {
-      setPurchasedCarIds(readPurchasedCarIds());
+      setPurchasedCarIds(getPurchasedCarIdsLocal());
     };
 
+    syncPurchasedCarIdsFromPurchases();
     syncPurchasedCars();
     window.addEventListener("storage", syncPurchasedCars);
     window.addEventListener(PURCHASED_CARS_UPDATED_EVENT, syncPurchasedCars);
@@ -438,7 +431,7 @@ export const CustomerHome = () => {
                       car={car}
                       isFavorite={isFavorite}
                       isCompared={isCompared}
-                      onViewDetails={setSelectedCar}
+                      onViewDetails={(item) => navigate(`/customer/car/${item._id}`)}
                       onBuyNow={(item) => navigate(`/buy/${item._id}`)}
                       onToggleFavorite={toggleFavorite}
                       onOpenInquiry={(item) => openAction(item, "inquiry")}
@@ -469,7 +462,7 @@ export const CustomerHome = () => {
         favoriteCars={favoriteCars}
         formatPrice={formatPrice}
         onRemoveFromWishlist={toggleFavorite}
-        onViewDetails={setSelectedCar}
+        onViewDetails={(item) => navigate(`/customer/car/${item._id}`)}
         onBuyNow={(item) => navigate(`/buy/${item._id}`)}
       />
 
@@ -489,12 +482,6 @@ export const CustomerHome = () => {
           </button> */}
         </div>
       </section>
-
-      <CarModal
-        selectedCar={selectedCar && !actionType ? selectedCar : null}
-        onClose={() => setSelectedCar(null)}
-        formatPrice={formatPrice}
-      />
 
       <ActionModal
         selectedCar={selectedCar}
