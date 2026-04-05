@@ -3,6 +3,11 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { getAuthProfile, getAuthUserId, readAuthSession } from "../../utils/auth";
 import {
+  getPurchasedCarIdsLocal,
+  PURCHASED_CARS_UPDATED_EVENT,
+  syncPurchasedCarIdsFromPurchases,
+} from "../../services/purchaseService";
+import {
   buildCarCreatorPayload,
   getCarAddedByDetails,
   saveCarCreatorMeta,
@@ -33,6 +38,7 @@ export const AdminCars = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [purchasedCarIds, setPurchasedCarIds] = useState(() => getPurchasedCarIdsLocal());
   const [form, setForm] = useState(initialForm);
   const [editingCarId, setEditingCarId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -179,6 +185,10 @@ export const AdminCars = () => {
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const filteredCars = cars.filter((car) => {
+    if (purchasedCarIds.includes(car._id)) {
+      return false;
+    }
+
     if (!normalizedSearch) {
       return true;
     }
@@ -198,6 +208,23 @@ export const AdminCars = () => {
 
   useEffect(() => {
     fetchCars();
+  }, []);
+
+  useEffect(() => {
+    const syncPurchasedCars = () => {
+      setPurchasedCarIds(getPurchasedCarIdsLocal());
+    };
+
+    syncPurchasedCarIdsFromPurchases();
+    syncPurchasedCars();
+
+    window.addEventListener("storage", syncPurchasedCars);
+    window.addEventListener(PURCHASED_CARS_UPDATED_EVENT, syncPurchasedCars);
+
+    return () => {
+      window.removeEventListener("storage", syncPurchasedCars);
+      window.removeEventListener(PURCHASED_CARS_UPDATED_EVENT, syncPurchasedCars);
+    };
   }, []);
 
   return (
