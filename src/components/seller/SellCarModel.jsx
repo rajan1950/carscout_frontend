@@ -35,7 +35,7 @@ const stepConfig = [
 const options = {
   brand: ["MarutiSuzuki", "Hyundai", "Honda", "Tata", "Mahindra", "BMW", "Audi", "Toyota", "Kia", "Renault", "Skoda", "Volkswagen", "Mercedes-Benz", "Ford", "Nissan", "Jaguar", "Land Rover", "Volvo", "Mitsubishi", "Isuzu", "Datsun", "Lexus", "Infiniti", "Acura", "Alfa Romeo", "Fiat", "Mini", "Porsche", "Rolls-Royce", "Bentley"],
   city: ["Ahmedabad", "Mumbai", "Delhi", "Bangalore", "Pune", "Hyderabad", "Chennai", "Kolkata", "Surat", "Jaipur", "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane", "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna", "Vadodara", "Ghaziabad", "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Kalyan-Dombivli", "Vasai-Virar", "Varanasi", "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", "Navi Mumbai", "Allahabad", "Ranchi", "Howrah", "Coimbatore", "Jabalpur", "Gwalior", "Vijayawada", "Jodhpur", "Madurai", "Raipur", "Kota", "Guwahati", "Chandigarh", "Solapur", "Hubli-Dharwad", "Bareilly", "Mysore", "Moradabad", "Gurgaon", "Aligarh", "Jalandhar", "Tiruchirappalli", "Bhubaneswar"],
-  owner: ["1st owner", "2nd owner", "3rd owner", "4th owner", "5th owner", "6th owner", "7th owner", "8th owner", "9th owner", "10+ owner"],
+  owner: ["1 owner", "2 owner", "3 owner", "4 owner", "5 owner", "6 owner", "7 owner", "8 owner", "9 owner", "10+ owner"],
   mileage: [
     "0 - 10,000 km",
     "10,000 - 20,000 km",
