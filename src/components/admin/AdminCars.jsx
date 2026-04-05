@@ -368,7 +368,7 @@ export const AdminCars = () => {
                 name="owner"
                 value={form.owner}
                 onChange={handleChange}
-                placeholder="Owner (e.g. 1st owner)"
+                placeholder="Owner (e.g. 1 owner)"
                 required
                 className="border border-gray-300 rounded-xl px-3 py-2"
               />
