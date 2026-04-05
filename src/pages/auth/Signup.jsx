@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { toast } from "react-toastify";
+import { sendTransactionalEmailApi } from "../../services/emailService";
+import { startSignupOtpFlow, clearPendingSignupOtp } from "../../services/signupOtpService";
+import { buildSignupOtpMailTemplate } from "../../utils/signupOtpTemplate";
 
 
 export const Signup = () => {
@@ -10,6 +12,7 @@ export const Signup = () => {
 
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -22,26 +25,47 @@ export const Signup = () => {
   const navigate = useNavigate();
 
   const submitHandler = async (data) => {
+    setIsSubmitting(true);
     try {
-      const res = await axios.post(
-        "http://localhost:4444/user/register",
-        {
-          firstname: data.firstname,
-          lastname: data.lastname,
-          email: data.email,
-          password: data.password,
-          role: data.role
-        }
+      const signupData = {
+        firstname: data.firstname,
+        lastname: data.lastname,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+      };
 
-      );
-      if (res.status === 201) {
-        toast.success("Registration successful! Please login.")
-        reset()
-        navigate("/login")
-      }
-      // console.log(res.data);
+      const otpState = startSignupOtpFlow(signupData);
+      const mailTemplate = buildSignupOtpMailTemplate({
+        name: data.firstname,
+        otp: otpState.otp,
+        expiryMinutes: 5,
+      });
+
+      await sendTransactionalEmailApi({
+        to: data.email,
+        subject: mailTemplate.subject,
+        text: mailTemplate.text,
+        html: mailTemplate.html,
+        template: "signup-otp",
+        metadata: {
+          type: "signup-otp",
+        },
+      });
+
+      toast.success("OTP sent to your email. Please verify to continue.");
+      reset();
+      navigate("/signup/verify-otp", {
+        state: {
+          email: data.email,
+        },
+      });
     } catch (error) {
-      console.log("signup error...", error);
+      clearPendingSignupOtp();
+      toast.error(error?.response?.data?.message || error?.message || "Failed to send OTP");
+      console.log("signup OTP flow error...", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -222,9 +246,10 @@ export const Signup = () => {
           {/* Button */}
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 py-2 rounded-md mt-4"
+            disabled={isSubmitting}
+            className="w-full bg-blue-500 hover:bg-blue-600 py-2 rounded-md mt-4 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Sign Up
+            {isSubmitting ? "Sending OTP..." : "Sign Up"}
           </button>
 
         </form>
@@ -233,7 +258,7 @@ export const Signup = () => {
         <p className="text-center text-gray-400 mt-4">
           Already have an account?{" "}
           <span
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/login")}
             className="text-blue-400 cursor-pointer"
           >
             Sign In
