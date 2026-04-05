@@ -10,6 +10,7 @@ import { Login } from "../pages/auth/Login";
 import { Signup } from "../pages/auth/Signup";
 import { ForgotPassword } from "../pages/auth/forgotpassword";
 import { ResetPassword } from "../pages/auth/ResetPassword";
+import { SignupOtpVerify } from "../pages/auth/SignupOtpVerify";
 
 // 🔹 Common Pages
 import ProfilePage from "../pages/ProfilePage";
@@ -18,6 +19,7 @@ import Found404 from "../pages/404Found";
 
 // 🔹 Buyer
 import { BuyCarPage } from "../components/buyer/BuyCarPage";
+import { CarDetailsPage } from "../components/buyer/CarDetailsPage";
 import { CompareInsightsPage } from "../components/buyer/CompareInsightsPage";
 
 // 🔹 Customer
@@ -77,6 +79,10 @@ const router = createBrowserRouter([
     element: <Signup />,
   },
   {
+    path: "/signup/verify-otp",
+    element: <SignupOtpVerify />,
+  },
+  {
     path: "/forgotpassword",
     element: <ForgotPassword />,
   },
@@ -129,6 +135,10 @@ const router = createBrowserRouter([
       {
         path: "compare",
         element: <CompareInsightsPage />,
+      },
+      {
+        path: "car/:carId",
+        element: <CarDetailsPage />,
       },
     ],
   },
