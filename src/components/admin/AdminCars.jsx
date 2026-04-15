@@ -12,6 +12,7 @@ import {
   getCarAddedByDetails,
   saveCarCreatorMeta,
 } from "../../utils/carOwnership";
+import { normalizeOwnerForApi } from "../../utils/owner";
 
 const ADMIN_BASE_URL = "http://localhost:4444/admin";
 const CAR_BASE_URL = "http://localhost:4444/car";
@@ -95,12 +96,14 @@ export const AdminCars = () => {
       return;
     }
 
+    const normalizedOwner = normalizeOwnerForApi(form.owner);
+
     const payload = {
       brand: form.brand,
       model: form.model,
         city: form.city,
       year: form.year ? Number(form.year) : undefined,
-        owner: form.owner,
+        owner: normalizedOwner,
       price: form.price ? Number(form.price) : undefined,
         mileage: form.mileage,
       fuelType: form.fuelType,
