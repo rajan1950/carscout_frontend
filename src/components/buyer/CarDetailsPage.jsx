@@ -2,6 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import {
+  FaCalendarAlt,
+  FaGasPump,
+  FaMapMarkerAlt,
+  FaRoad,
+  FaUserTag,
+  FaCogs,
+} from "react-icons/fa";
 import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
 import { getCarAddedByDetails } from "../../utils/carOwnership";
 import { createBookingApi } from "../../services/bookingService";
@@ -113,6 +121,50 @@ export const CarDetailsPage = () => {
   const imageUrl = resolveCarImageFromCar(car) || CAR_IMAGE_FALLBACK;
   const addedBy = getCarAddedByDetails(car || {});
   const numericPrice = Number(car?.price || 0);
+  const specItems = [
+    {
+      key: "year",
+      label: "Year",
+      value: car?.year || "N/A",
+      icon: FaCalendarAlt,
+      iconClass: "bg-blue-100 text-blue-700",
+    },
+    {
+      key: "fuelType",
+      label: "Fuel",
+      value: car?.fuelType || "N/A",
+      icon: FaGasPump,
+      iconClass: "bg-emerald-100 text-emerald-700",
+    },
+    {
+      key: "transmission",
+      label: "Transmission",
+      value: car?.transmission || "N/A",
+      icon: FaCogs,
+      iconClass: "bg-indigo-100 text-indigo-700",
+    },
+    {
+      key: "mileage",
+      label: "Mileage",
+      value: car?.mileage ? `${car.mileage} km` : "N/A",
+      icon: FaRoad,
+      iconClass: "bg-amber-100 text-amber-700",
+    },
+    {
+      key: "city",
+      label: "City",
+      value: car?.city || "N/A",
+      icon: FaMapMarkerAlt,
+      iconClass: "bg-rose-100 text-rose-700",
+    },
+    {
+      key: "owner",
+      label: "Owner",
+      value: car?.owner || "N/A",
+      icon: FaUserTag,
+      iconClass: "bg-cyan-100 text-cyan-700",
+    },
+  ];
   const averageMileage = getMileageAverage(car?.mileage);
   const pricePerKm = useMemo(() => {
     if (!averageMileage || averageMileage <= 0) {
@@ -297,15 +349,27 @@ export const CarDetailsPage = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-4">
             <p className="text-xs uppercase tracking-[0.14em] text-slate-500 font-semibold">Vehicle Specs</p>
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <p className="rounded-lg bg-white p-2.5 text-sm text-slate-700"><span className="font-semibold text-slate-900">Year:</span> {car.year || "N/A"}</p>
-              <p className="rounded-lg bg-white p-2.5 text-sm text-slate-700"><span className="font-semibold text-slate-900">Fuel:</span> {car.fuelType || "N/A"}</p>
-              <p className="rounded-lg bg-white p-2.5 text-sm text-slate-700"><span className="font-semibold text-slate-900">Transmission:</span> {car.transmission || "N/A"}</p>
-              <p className="rounded-lg bg-white p-2.5 text-sm text-slate-700"><span className="font-semibold text-slate-900">Mileage:</span> {car.mileage || "N/A"} km</p>
-              <p className="rounded-lg bg-white p-2.5 text-sm text-slate-700"><span className="font-semibold text-slate-900">City:</span> {car.city || "N/A"}</p>
-              <p className="rounded-lg bg-white p-2.5 text-sm text-slate-700"><span className="font-semibold text-slate-900">Owner:</span> {car.owner || "N/A"}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3">
+              {specItems.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <div
+                    key={item.key}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 flex items-center gap-3"
+                  >
+                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center text-base ${item.iconClass}`}>
+                      <Icon />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500 font-semibold">{item.label}</p>
+                      <p className="text-sm font-semibold text-slate-800 truncate">{item.value}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
