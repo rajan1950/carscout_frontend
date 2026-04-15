@@ -1,10 +1,23 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaChevronLeft } from "react-icons/fa";
+import {
+  FaTimes,
+  FaChevronLeft,
+  FaCalendarAlt,
+  FaGasPump,
+  FaBolt,
+  FaLeaf,
+  FaCogs,
+  FaRoad,
+  FaMapMarkerAlt,
+  FaUserTag,
+  FaCarSide,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 import { sellCarApi } from "../../services/sellCarApi";
 import { getAuthProfile, getAuthUserId, readAuthSession } from "../../utils/auth";
 import { buildCarCreatorPayload, saveCarCreatorMeta } from "../../utils/carOwnership";
+import { normalizeOwnerForApi, OWNER_OPTIONS } from "../../utils/owner";
 
 const initialForm = {
   brand: "",
@@ -35,7 +48,7 @@ const stepConfig = [
 const options = {
   brand: ["MarutiSuzuki", "Hyundai", "Honda", "Tata", "Mahindra", "BMW", "Audi", "Toyota", "Kia", "Renault", "Skoda", "Volkswagen", "Mercedes-Benz", "Ford", "Nissan", "Jaguar", "Land Rover", "Volvo", "Mitsubishi", "Isuzu", "Datsun", "Lexus", "Infiniti", "Acura", "Alfa Romeo", "Fiat", "Mini", "Porsche", "Rolls-Royce", "Bentley"],
   city: ["Ahmedabad", "Mumbai", "Delhi", "Bangalore", "Pune", "Hyderabad", "Chennai", "Kolkata", "Surat", "Jaipur", "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane", "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna", "Vadodara", "Ghaziabad", "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Kalyan-Dombivli", "Vasai-Virar", "Varanasi", "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", "Navi Mumbai", "Allahabad", "Ranchi", "Howrah", "Coimbatore", "Jabalpur", "Gwalior", "Vijayawada", "Jodhpur", "Madurai", "Raipur", "Kota", "Guwahati", "Chandigarh", "Solapur", "Hubli-Dharwad", "Bareilly", "Mysore", "Moradabad", "Gurgaon", "Aligarh", "Jalandhar", "Tiruchirappalli", "Bhubaneswar"],
-  owner: ["1 owner", "2 owner", "3 owner", "4 owner", "5 owner", "6 owner", "7 owner", "8 owner", "9 owner", "10+ owner"],
+  owner: OWNER_OPTIONS,
   mileage: [
     "0 - 10,000 km",
     "10,000 - 20,000 km",
@@ -98,6 +111,42 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
   const session = readAuthSession();
 
   const selectedStep = stepConfig[step];
+
+  const getOptionVisual = (stepKey, item) => {
+    const text = String(item || "").toLowerCase();
+
+    if (stepKey === "fuelType") {
+      if (text.includes("electric")) {
+        return { Icon: FaBolt, iconClass: "bg-violet-100 text-violet-700" };
+      }
+      if (text.includes("cng")) {
+        return { Icon: FaLeaf, iconClass: "bg-emerald-100 text-emerald-700" };
+      }
+      return { Icon: FaGasPump, iconClass: "bg-amber-100 text-amber-700" };
+    }
+
+    if (stepKey === "transmission") {
+      return { Icon: FaCogs, iconClass: "bg-indigo-100 text-indigo-700" };
+    }
+
+    if (stepKey === "owner") {
+      return { Icon: FaUserTag, iconClass: "bg-cyan-100 text-cyan-700" };
+    }
+
+    if (stepKey === "mileage") {
+      return { Icon: FaRoad, iconClass: "bg-orange-100 text-orange-700" };
+    }
+
+    if (stepKey === "city") {
+      return { Icon: FaMapMarkerAlt, iconClass: "bg-rose-100 text-rose-700" };
+    }
+
+    if (stepKey === "year") {
+      return { Icon: FaCalendarAlt, iconClass: "bg-blue-100 text-blue-700" };
+    }
+
+    return { Icon: FaCarSide, iconClass: "bg-slate-200 text-slate-700" };
+  };
 
   const modelOptions = useMemo(
     () => (form.brand ? modelByBrand[form.brand] || [] : []),
@@ -165,6 +214,12 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
       return;
     }
 
+    const normalizedOwner = normalizeOwnerForApi(form.owner);
+    if (!normalizedOwner) {
+      toast.error("Please select a valid owner count");
+      return;
+    }
+
     setSubmitting(true);
 
     const payload = new FormData();
@@ -172,7 +227,7 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
     payload.append("model", form.model);
     payload.append("city", form.city);
     payload.append("year", String(parsedYear));
-    payload.append("owner", form.owner);
+    payload.append("owner", normalizedOwner);
     payload.append("mileage", form.mileage);
     payload.append("fuelType", form.fuelType);
     payload.append("transmission", form.transmission);
@@ -180,7 +235,7 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
     payload.append(
       "description",
       form.description ||
-        `${form.brand} ${form.model} in ${form.city}, ${form.owner}, approx ${form.mileage}`
+        `${form.brand} ${form.model} in ${form.city}, ${normalizedOwner}, approx ${form.mileage}`
     );
     payload.append("image", form.imageFile);
 
@@ -250,18 +305,26 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
       return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {yearOptions.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => selectValue("year", item)}
-              className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
-                form.year === item
-                  ? "bg-cyan-50 border-cyan-500 text-cyan-800"
-                  : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              {item}
-            </button>
+            (() => {
+              const { Icon, iconClass } = getOptionVisual("year", item);
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => selectValue("year", item)}
+                  className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition flex items-center gap-2.5 ${
+                    form.year === item
+                      ? "bg-cyan-50 border-cyan-500 text-cyan-800"
+                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  <span className={`h-8 w-8 rounded-lg flex items-center justify-center text-sm ${iconClass}`}>
+                    <Icon />
+                  </span>
+                  <span>{item}</span>
+                </button>
+              );
+            })()
           ))}
         </div>
       );
@@ -316,18 +379,26 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
       return (
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
           {options.city.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => selectValue("city", item)}
-              className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
-                form.city === item
-                  ? "bg-cyan-50 border-cyan-500 text-cyan-800"
-                  : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              {item}
-            </button>
+            (() => {
+              const { Icon, iconClass } = getOptionVisual("city", item);
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => selectValue("city", item)}
+                  className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition flex items-center gap-2.5 ${
+                    form.city === item
+                      ? "bg-cyan-50 border-cyan-500 text-cyan-800"
+                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  <span className={`h-8 w-8 rounded-lg flex items-center justify-center text-sm ${iconClass}`}>
+                    <Icon />
+                  </span>
+                  <span className="truncate">{item}</span>
+                </button>
+              );
+            })()
           ))}
         </div>
       );
@@ -346,20 +417,27 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
 
     return (
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {stepOptions.map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => selectValue(selectedStep.key, item)}
-            className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
-              form[selectedStep.key] === item
-                ? "bg-cyan-50 border-cyan-500 text-cyan-800"
-                : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-            }`}
-          >
-            {item}
-          </button>
-        ))}
+        {stepOptions.map((item) => {
+          const { Icon, iconClass } = getOptionVisual(selectedStep.key, item);
+
+          return (
+            <button
+              key={item}
+              type="button"
+              onClick={() => selectValue(selectedStep.key, item)}
+              className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition flex items-center gap-2.5 ${
+                form[selectedStep.key] === item
+                  ? "bg-cyan-50 border-cyan-500 text-cyan-800"
+                  : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              <span className={`h-8 w-8 rounded-lg flex items-center justify-center text-sm ${iconClass}`}>
+                <Icon />
+              </span>
+              <span className="truncate">{item}</span>
+            </button>
+          );
+        })}
       </div>
     );
   };
