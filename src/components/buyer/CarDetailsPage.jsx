@@ -10,7 +10,11 @@ import {
   FaUserTag,
   FaCogs,
 } from "react-icons/fa";
-import { CAR_IMAGE_FALLBACK, resolveCarImageFromCar } from "../../utils/carImage";
+import {
+  CAR_IMAGE_FALLBACK,
+  resolveCarImageFromCar,
+  resolveCarImageGalleryFromCar,
+} from "../../utils/carImage";
 import { getCarAddedByDetails } from "../../utils/carOwnership";
 import { createBookingApi } from "../../services/bookingService";
 import { getAuthProfile, getAuthUserId } from "../../utils/auth";
@@ -53,6 +57,7 @@ export const CarDetailsPage = () => {
   const [error, setError] = useState("");
   const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
   const [isSubmittingTestDrive, setIsSubmittingTestDrive] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const [inquiryForm, setInquiryForm] = useState({
     name: profile.name || "",
@@ -118,7 +123,22 @@ export const CarDetailsPage = () => {
     };
   }, [car]);
 
-  const imageUrl = resolveCarImageFromCar(car) || CAR_IMAGE_FALLBACK;
+  const galleryImages = useMemo(() => {
+    const allImages = resolveCarImageGalleryFromCar(car);
+    if (allImages.length > 0) {
+      return allImages;
+    }
+
+    const singleImage = resolveCarImageFromCar(car);
+    return singleImage ? [singleImage] : [CAR_IMAGE_FALLBACK];
+  }, [car]);
+
+  const imageUrl = galleryImages[activeImageIndex] || galleryImages[0] || CAR_IMAGE_FALLBACK;
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [car?._id]);
+
   const addedBy = getCarAddedByDetails(car || {});
   const numericPrice = Number(car?.price || 0);
   const specItems = [
@@ -320,6 +340,33 @@ export const CarDetailsPage = () => {
               event.currentTarget.src = CAR_IMAGE_FALLBACK;
             }}
           />
+
+          {galleryImages.length > 1 && (
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {galleryImages.slice(0, 3).map((image, index) => (
+                <button
+                  key={`${image}-${index}`}
+                  type="button"
+                  onClick={() => setActiveImageIndex(index)}
+                  className={`rounded-lg overflow-hidden border-2 transition ${
+                    activeImageIndex === index
+                      ? "border-cyan-500"
+                      : "border-slate-200 hover:border-cyan-300"
+                  }`}
+                >
+                  <img
+                    src={image}
+                    alt={`${car.brand || "Car"} ${car.model || ""} view ${index + 1}`}
+                    className="h-24 w-full object-cover"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = CAR_IMAGE_FALLBACK;
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="mt-5 rounded-xl border border-slate-200 p-4 bg-slate-50">
             <p className="text-xs uppercase tracking-[0.14em] text-slate-500 font-semibold">Description</p>
