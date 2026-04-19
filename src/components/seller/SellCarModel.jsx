@@ -16,6 +16,7 @@ import {
 import { toast } from "react-toastify";
 import { sellCarApi } from "../../services/sellCarApi";
 import { getAuthProfile, getAuthUserId, readAuthSession } from "../../utils/auth";
+import { saveLocalCarImageGalleryOverride } from "../../utils/carImage";
 import { buildCarCreatorPayload, saveCarCreatorMeta } from "../../utils/carOwnership";
 import { normalizeOwnerForApi, OWNER_OPTIONS } from "../../utils/owner";
 
@@ -30,7 +31,7 @@ const initialForm = {
   transmission: "",
   price: "",
   description: "",
-  imageFile: null,
+  imageFiles: [],
 };
 
 const stepConfig = [
@@ -100,6 +101,133 @@ const modelByBrand = {
 };
 
 const yearOptions = Array.from({ length: 15 }, (_, i) => String(new Date().getFullYear() - i));
+
+const getSubmissionErrorMessage = (err) => {
+  const apiMessage = err?.response?.data?.message;
+  if (typeof apiMessage === "string" && apiMessage.trim()) {
+    return apiMessage;
+  }
+
+  const rawResponse = err?.response?.data;
+  if (typeof rawResponse === "string") {
+    if (rawResponse.toLowerCase().includes("unexpected field")) {
+      return "Image upload field mismatch. Please retry.";
+    }
+    return rawResponse;
+  }
+
+  if (rawResponse && typeof rawResponse === "object") {
+    const code = String(rawResponse.code || "").toLowerCase();
+    const error = String(rawResponse.error || "").toLowerCase();
+    if (code.includes("unexpected") || error.includes("unexpected") || code.includes("limit_unexpected_file")) {
+      return "Image upload field mismatch. Please retry.";
+    }
+  }
+
+  if (err?.message) {
+    return err.message;
+  }
+
+  return "Failed to submit car";
+};
+
+const isFieldMismatchError = (err) => {
+  const apiMessage = String(err?.response?.data?.message || "").toLowerCase();
+  const rawResponse = err?.response?.data;
+  const rawText = typeof rawResponse === "string" ? rawResponse.toLowerCase() : "";
+  const code = String(rawResponse?.code || "").toLowerCase();
+  const error = String(rawResponse?.error || "").toLowerCase();
+
+  return (
+    apiMessage.includes("unexpected field") ||
+    rawText.includes("unexpected field") ||
+    code.includes("limit_unexpected_file") ||
+    code.includes("unexpected") ||
+    error.includes("unexpected")
+  );
+};
+
+const buildSellCarPayload = (
+  form,
+  parsedYear,
+  parsedPrice,
+  normalizedOwner,
+  creatorPayload,
+  appendImages
+) => {
+  const payload = new FormData();
+  payload.append("brand", form.brand);
+  payload.append("model", form.model);
+  payload.append("city", form.city);
+  payload.append("year", String(parsedYear));
+  payload.append("owner", normalizedOwner);
+  payload.append("mileage", form.mileage);
+  payload.append("fuelType", form.fuelType);
+  payload.append("transmission", form.transmission);
+  payload.append("price", String(parsedPrice));
+  payload.append(
+    "description",
+    form.description ||
+      `${form.brand} ${form.model} in ${form.city}, ${normalizedOwner}, approx ${form.mileage}`
+  );
+  appendImages(payload, form.imageFiles);
+
+  Object.entries(creatorPayload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      payload.append(key, String(value));
+    }
+  });
+
+  return payload;
+};
+
+const IMAGE_APPEND_STRATEGIES = [
+  {
+    label: "image",
+    appendImages: (payload, files) => {
+      files.forEach((file) => payload.append("image", file));
+    },
+  },
+  {
+    label: "images",
+    appendImages: (payload, files) => {
+      files.forEach((file) => payload.append("images", file));
+    },
+  },
+  {
+    label: "images[]",
+    appendImages: (payload, files) => {
+      files.forEach((file) => payload.append("images[]", file));
+    },
+  },
+  {
+    label: "image1-image3",
+    appendImages: (payload, files) => {
+      files.forEach((file, index) => payload.append(`image${index + 1}`, file));
+    },
+  },
+  {
+    label: "carImage1-carImage3",
+    appendImages: (payload, files) => {
+      files.forEach((file, index) => payload.append(`carImage${index + 1}`, file));
+    },
+  },
+  {
+    label: "image-image2-image3",
+    appendImages: (payload, files) => {
+      files.forEach((file, index) => {
+        const fieldName = index === 0 ? "image" : `image${index + 1}`;
+        payload.append(fieldName, file);
+      });
+    },
+  },
+  {
+    label: "images[0]-images[2]",
+    appendImages: (payload, files) => {
+      files.forEach((file, index) => payload.append(`images[${index}]`, file));
+    },
+  },
+];
 
 const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
   const MotionDiv = motion.div;
@@ -195,10 +323,15 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
     form.fuelType &&
     form.transmission &&
     form.price &&
-    form.imageFile;
+    form.imageFiles.length === 3;
 
   const submitListing = async () => {
     if (!canSubmit || submitting) {
+      return;
+    }
+
+    if (form.imageFiles.length !== 3) {
+      toast.error("Please upload exactly 3 car images");
       return;
     }
 
@@ -222,23 +355,6 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
 
     setSubmitting(true);
 
-    const payload = new FormData();
-    payload.append("brand", form.brand);
-    payload.append("model", form.model);
-    payload.append("city", form.city);
-    payload.append("year", String(parsedYear));
-    payload.append("owner", normalizedOwner);
-    payload.append("mileage", form.mileage);
-    payload.append("fuelType", form.fuelType);
-    payload.append("transmission", form.transmission);
-    payload.append("price", String(parsedPrice));
-    payload.append(
-      "description",
-      form.description ||
-        `${form.brand} ${form.model} in ${form.city}, ${normalizedOwner}, approx ${form.mileage}`
-    );
-    payload.append("image", form.imageFile);
-
     const creatorPayload = buildCarCreatorPayload({
       userId,
       role: session?.role,
@@ -246,32 +362,79 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
       email: profile.email,
     });
 
-    Object.entries(creatorPayload).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        payload.append(key, String(value));
-      }
-    });
-
     try {
-      const response = await sellCarApi(payload);
+      let response;
+      let lastError;
+      let usedSingleImageFallback = false;
+
+      for (const strategy of IMAGE_APPEND_STRATEGIES) {
+        const payload = buildSellCarPayload(
+          form,
+          parsedYear,
+          parsedPrice,
+          normalizedOwner,
+          creatorPayload,
+          strategy.appendImages
+        );
+
+        try {
+          response = await sellCarApi(payload);
+          break;
+        } catch (attemptError) {
+          lastError = attemptError;
+
+          // Retry alternate field names only for multipart field mismatch scenarios.
+          if (!isFieldMismatchError(attemptError)) {
+            throw attemptError;
+          }
+        }
+      }
+
+      if (!response && isFieldMismatchError(lastError)) {
+        const singleImagePayload = buildSellCarPayload(
+          form,
+          parsedYear,
+          parsedPrice,
+          normalizedOwner,
+          creatorPayload,
+          (payload, files) => {
+            if (files[0]) {
+              payload.append("image", files[0]);
+            }
+          }
+        );
+        response = await sellCarApi(singleImagePayload);
+        usedSingleImageFallback = true;
+      }
+
+      if (!response) {
+        throw lastError || new Error("Failed to submit car");
+      }
+
       const createdCarId = response?.data?._id || response?._id || response?.car?._id || "";
+
+      if (createdCarId) {
+        await saveLocalCarImageGalleryOverride(createdCarId, form.imageFiles);
+      }
+
       saveCarCreatorMeta(createdCarId, {
         name: profile.name,
         email: profile.email,
         userId,
         role: session?.role,
       });
+
+      if (usedSingleImageFallback) {
+        toast.info("Listing submitted. Backend accepted one image; extra images are saved locally for details view.");
+      }
+
       toast.success(response?.message || "Car listed successfully");
       if (typeof onSuccess === "function") {
         onSuccess();
       }
       closeAndReset();
     } catch (err) {
-      if (err.response?.status === 400 && err.response?.data?.message) {
-        toast.error(err.response.data.message);
-      } else {
-        toast.error(err.response?.data?.message || "Failed to submit car");
-      }
+      toast.error(getSubmissionErrorMessage(err));
       setSubmitting(false);
     }
   };
@@ -337,15 +500,42 @@ const SellCarModel = ({ isOpen, onClose, onSuccess }) => {
             <label className="block text-sm font-medium text-slate-700 mb-1">Car image</label>
             <input
               type="file"
+              multiple
               accept="image/*"
               onChange={(e) => {
-                const file = e.target.files?.[0] || null;
-                setForm((prev) => ({ ...prev, imageFile: file }));
+                const incomingFiles = Array.from(e.target.files || []);
+
+                setForm((prev) => {
+                  const mergedFiles = [...prev.imageFiles, ...incomingFiles];
+                  const uniqueFiles = mergedFiles.filter(
+                    (file, index, self) =>
+                      index ===
+                      self.findIndex(
+                        (candidate) =>
+                          candidate.name === file.name &&
+                          candidate.size === file.size &&
+                          candidate.lastModified === file.lastModified
+                      )
+                  );
+
+                  if (uniqueFiles.length > 3) {
+                    toast.error("You can upload a maximum of 3 images");
+                    return prev;
+                  }
+
+                  return { ...prev, imageFiles: uniqueFiles };
+                });
+
+                // Reset input value so selecting the same file again still triggers onChange.
+                e.target.value = "";
               }}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-cyan-400"
             />
-            {form.imageFile && (
-              <p className="mt-1 text-xs text-slate-500">Selected: {form.imageFile.name}</p>
+            <p className="mt-1 text-xs text-slate-500">Upload exactly 3 images. You can select all at once or one by one.</p>
+            {form.imageFiles.length > 0 && (
+              <p className="mt-1 text-xs text-slate-500">
+                Selected ({form.imageFiles.length}/3): {form.imageFiles.map((file) => file.name).join(", ")}
+              </p>
             )}
           </div>
 
