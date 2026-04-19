@@ -9,6 +9,7 @@ import { AdminReports } from "./AdminReports"
 import { AdminTestDrives } from "./AdminTestDrives"
 import { AdminWishlists } from "./AdminWishlists"
 import { AdminPurchases } from "./AdminPurchases"
+import { AdminOffers } from "./AdminOffers"
 import { AdminSettings } from "./AdminSettings"
 import { AdminDefaultRoute } from "./AdminDefaultRoute"
 import { AdminRouteGuard } from "./AdminRouteGuard"
@@ -25,6 +26,7 @@ export {
          AdminTestDrives,
          AdminWishlists,
          AdminPurchases,
+         AdminOffers,
          AdminSettings,
          AdminDefaultRoute,
          AdminRouteGuard,

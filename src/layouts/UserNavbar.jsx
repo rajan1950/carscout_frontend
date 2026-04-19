@@ -191,6 +191,13 @@ const UserNavbar = () => {
                     >
                       Home
                     </Link>
+                    <Link
+                      to="/customer/offers"
+                      onClick={() => setProfileOpen(false)}
+                      className="block rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-cyan-300 hover:bg-cyan-50"
+                    >
+                      Offers
+                    </Link>
                     {profile.isAdmin && (
                       <Link
                         to="/adminpanel"
@@ -282,6 +289,16 @@ const UserNavbar = () => {
                 className={navButtonClass}
               >
                 {hasCompleteProfile ? "Profile" : "Complete Profile"}
+              </Link>
+            )}
+
+            {profile.isLoggedIn && (
+              <Link
+                to="/customer/offers"
+                onClick={() => setOpen(false)}
+                className={navButtonClass}
+              >
+                Offers
               </Link>
             )}
 

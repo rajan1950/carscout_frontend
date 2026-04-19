@@ -17,7 +17,8 @@ import {
 } from "../../utils/carImage";
 import { getCarAddedByDetails } from "../../utils/carOwnership";
 import { createBookingApi } from "../../services/bookingService";
-import { getAuthProfile, getAuthUserId } from "../../utils/auth";
+import { getAuthProfile, getAuthUserId, readAuthSession } from "../../utils/auth";
+import { createOfferApi } from "../../services/offerService";
 
 const getMileageAverage = (mileage) => {
   const values = String(mileage || "")
@@ -51,12 +52,14 @@ export const CarDetailsPage = () => {
   const navigate = useNavigate();
   const profile = getAuthProfile();
   const userId = getAuthUserId();
+  const authToken = readAuthSession()?.token;
   const [car, setCar] = useState(null);
   const [allCars, setAllCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
   const [isSubmittingTestDrive, setIsSubmittingTestDrive] = useState(false);
+  const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const [inquiryForm, setInquiryForm] = useState({
@@ -69,6 +72,13 @@ export const CarDetailsPage = () => {
     date: "",
     location: "",
   });
+
+  const [offerForm, setOfferForm] = useState({
+    offeredPrice: "",
+    message: "",
+  });
+  const [sellerCandidates, setSellerCandidates] = useState([]);
+  const [selectedSellerId, setSelectedSellerId] = useState("");
 
   useEffect(() => {
     const fetchCar = async () => {
@@ -140,6 +150,13 @@ export const CarDetailsPage = () => {
   }, [car?._id]);
 
   const addedBy = getCarAddedByDetails(car || {});
+  const sellerId =
+    car?.sellerId?._id ||
+    car?.sellerId ||
+    car?.createdBy?._id ||
+    car?.createdBy ||
+    "";
+  const resolvedSellerId = sellerId || selectedSellerId;
   const numericPrice = Number(car?.price || 0);
   const specItems = [
     {
@@ -228,6 +245,47 @@ export const CarDetailsPage = () => {
     return unique;
   }, [allCars, car]);
 
+  useEffect(() => {
+    const fetchSellersForLegacyCars = async () => {
+      if (sellerId || !authToken) {
+        setSellerCandidates([]);
+        setSelectedSellerId("");
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:4444/user/getallusers", {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        const users = Array.isArray(response?.data?.users)
+          ? response.data.users
+          : Array.isArray(response?.data)
+            ? response.data
+            : [];
+        const sellers = users
+          .filter((item) => String(item?.role || "").toLowerCase() === "seller")
+          .map((item) => ({
+            id: item?._id || item?.id,
+            label: `${item?.firstname || ""} ${item?.lastname || ""}`.trim() || item?.email || "Seller",
+            email: item?.email || "",
+          }))
+          .filter((item) => item.id);
+
+        setSellerCandidates(sellers);
+        if (sellers.length === 1) {
+          setSelectedSellerId(sellers[0].id);
+        }
+      } catch {
+        setSellerCandidates([]);
+      }
+    };
+
+    fetchSellersForLegacyCars();
+  }, [sellerId, authToken]);
+
   const submitInquiry = async (event) => {
     event.preventDefault();
 
@@ -282,6 +340,41 @@ export const CarDetailsPage = () => {
       toast.error(err?.response?.data?.message || "Failed to create test drive request");
     } finally {
       setIsSubmittingTestDrive(false);
+    }
+  };
+
+  const submitOffer = async (event) => {
+    event.preventDefault();
+
+    if (!car?._id || isSubmittingOffer) {
+      return;
+    }
+
+    if (!userId) {
+      toast.error("Login required to make an offer");
+      return;
+    }
+
+    setIsSubmittingOffer(true);
+
+    try {
+      await createOfferApi({
+        ...(resolvedSellerId ? { sellerId: resolvedSellerId } : {}),
+        carId: car._id,
+        offeredPrice: Number(offerForm.offeredPrice),
+        message: offerForm.message,
+      });
+
+      toast.success("Offer sent successfully");
+      setOfferForm({
+        offeredPrice: "",
+        message: "",
+      });
+      navigate("/customer/offers");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to send offer");
+    } finally {
+      setIsSubmittingOffer(false);
     }
   };
 
@@ -435,6 +528,64 @@ export const CarDetailsPage = () => {
       </section>
 
       <section className="grid lg:grid-cols-2 gap-6 mt-8">
+        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5">
+          <h2 className="text-xl font-black text-slate-900">Make An Offer</h2>
+          <p className="text-slate-600 text-sm mt-1">
+            Send a direct price offer to the seller and negotiate from the offer center.
+          </p>
+
+          <form onSubmit={submitOffer} className="space-y-3 mt-4">
+            <input
+              type="number"
+              min="1"
+              value={offerForm.offeredPrice}
+              onChange={(event) => setOfferForm((prev) => ({ ...prev, offeredPrice: event.target.value }))}
+              placeholder={`Suggested: ${Math.round(numericPrice * 0.95) || 0}`}
+              required
+              className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-300"
+            />
+            <textarea
+              value={offerForm.message}
+              onChange={(event) => setOfferForm((prev) => ({ ...prev, message: event.target.value }))}
+              placeholder="I am ready to proceed quickly if this price works for you."
+              rows={3}
+              className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-300"
+            />
+
+            {!sellerId && sellerCandidates.length > 0 && (
+              <select
+                value={selectedSellerId}
+                onChange={(event) => setSelectedSellerId(event.target.value)}
+                className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-300"
+                required
+              >
+                <option value="">Select seller</option>
+                {sellerCandidates.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}{item.email ? ` - ${item.email}` : ""}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="submit"
+                disabled={isSubmittingOffer || (!sellerId && sellerCandidates.length > 0 && !selectedSellerId)}
+                className="rounded-xl bg-violet-700 hover:bg-violet-800 text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isSubmittingOffer ? "Sending Offer..." : "Send Offer"}
+              </button>
+              <Link
+                to="/customer/offers"
+                className="rounded-xl border border-violet-200 bg-white px-4 py-2.5 text-sm font-semibold text-violet-800 hover:bg-violet-100"
+              >
+                View Offers
+              </Link>
+            </div>
+          </form>
+        </div>
+
         <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-5">
           <h2 className="text-xl font-black text-slate-900">Send Inquiry</h2>
           <p className="text-slate-600 text-sm mt-1">Ask seller about condition, negotiation, and paperwork.</p>

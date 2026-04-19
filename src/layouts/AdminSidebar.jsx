@@ -11,6 +11,7 @@ import ReportGmailerrorredIcon from '@mui/icons-material/ReportGmailerrorred';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { ADMIN_SETTINGS_EVENT, readAdminSettings } from "../components/admin/adminPanelSettings";
 import { AUTH_SESSION_EVENT, clearAuthSession, getAuthProfile } from "../utils/auth";
@@ -36,6 +37,7 @@ export const AdminSidebar = () => {
         { to: "testdrives", label: "Test Drives", icon: EventAvailableIcon },
         { to: "wishlists", label: "Wishlists", icon: FavoriteBorderIcon },
         { to: "purchases", label: "Purchases", icon: ReceiptLongIcon },
+        { to: "offers", label: "Offers", icon: LocalOfferIcon },
         { to: "settings", label: "Settings", icon: SettingsIcon },
       ],
     },

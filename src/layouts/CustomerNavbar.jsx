@@ -73,6 +73,9 @@ export const CustomerNavbar = () => {
             <NavLink to="/customer/compare" className={navStyle}>
               Compare
             </NavLink>
+            <NavLink to="/customer/offers" className={navStyle}>
+              Offers
+            </NavLink>
             <NavLink to="/notifications" className={navStyle}>
               Notifications
             </NavLink>

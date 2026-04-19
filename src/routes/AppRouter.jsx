@@ -23,6 +23,7 @@ import Found404 from "../pages/404Found";
 import { BuyCarPage } from "../components/buyer/BuyCarPage";
 import { CarDetailsPage } from "../components/buyer/CarDetailsPage";
 import { CompareInsightsPage } from "../components/buyer/CompareInsightsPage";
+import { OffersPage } from "../components/buyer/OffersPage";
 
 // 🔹 Customer
 import { CustomerHome } from "../components/customer";
@@ -35,6 +36,7 @@ import {
   AdminDefaultRoute,
   AdminInquiries,
   AdminMessages,
+  AdminOffers,
   AdminPurchases,
   AdminReports,
   AdminReviews,
@@ -172,6 +174,10 @@ const router = createBrowserRouter([
             path: "car/:carId",
             element: <CarDetailsPage />,
           },
+          {
+            path: "offers",
+            element: <OffersPage />,
+          },
         ],
       },
 
@@ -195,6 +201,7 @@ const router = createBrowserRouter([
           { path: "testdrives", element: <AdminTestDrives /> },
           { path: "wishlists", element: <AdminWishlists /> },
           { path: "purchases", element: <AdminPurchases /> },
+          { path: "offers", element: <AdminOffers /> },
           { path: "settings", element: <AdminSettings /> },
         ],
       },
