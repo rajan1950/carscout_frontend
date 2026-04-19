@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FaCarSide, FaChevronDown, FaUserCircle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { NotificationBell } from "../components/notifications/NotificationBell";
+import { LogoutConfirmModal } from "../components/common/LogoutConfirmModal";
 import {
   AUTH_SESSION_EVENT,
   clearAuthSession,
@@ -20,6 +21,7 @@ const UserNavbar = () => {
   const dropdownRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [profile, setProfile] = useState(() => getAuthProfile());
 
   useEffect(() => {
@@ -73,10 +75,20 @@ const UserNavbar = () => {
     return "PR";
   }, [profile.name]);
 
-  const handleLogout = () => {
+  const handleLogout = ({ reason, details }) => {
+    try {
+      window.localStorage.setItem(
+        "carscout.lastLogoutMeta",
+        JSON.stringify({ reason, details, at: new Date().toISOString() })
+      );
+    } catch {
+      // Ignore non-critical local storage failures.
+    }
+
     clearAuthSession();
     setOpen(false);
     setProfileOpen(false);
+    setLogoutModalOpen(false);
     navigate("/login");
   };
 
@@ -190,7 +202,7 @@ const UserNavbar = () => {
                     )}
                     <button
                       type="button"
-                      onClick={handleLogout}
+                      onClick={() => setLogoutModalOpen(true)}
                       className="w-full rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
                     >
                       Logout
@@ -276,7 +288,7 @@ const UserNavbar = () => {
             {profile.isLoggedIn && (
               <button
                 type="button"
-                onClick={handleLogout}
+                onClick={() => setLogoutModalOpen(true)}
                 className="inline-flex items-center justify-center rounded-full bg-rose-600 px-4 py-2 text-base font-semibold text-white transition hover:bg-rose-700"
               >
                 Logout
@@ -285,6 +297,12 @@ const UserNavbar = () => {
           </nav>
         </div>
       )}
+
+      <LogoutConfirmModal
+        isOpen={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+      />
     </header>
   );
 };
