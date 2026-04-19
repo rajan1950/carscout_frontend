@@ -2,14 +2,27 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { clearAuthSession, getAuthProfile } from "../utils/auth";
 import { FaCarSide } from "react-icons/fa";
 import { NotificationBell } from "../components/notifications/NotificationBell";
+import { useState } from "react";
+import { LogoutConfirmModal } from "../components/common/LogoutConfirmModal";
 
 export const CustomerNavbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const profile = getAuthProfile();
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = ({ reason, details }) => {
+    try {
+      window.localStorage.setItem(
+        "carscout.lastLogoutMeta",
+        JSON.stringify({ reason, details, at: new Date().toISOString() })
+      );
+    } catch {
+      // Ignore non-critical local storage failures.
+    }
+
     clearAuthSession();
+    setLogoutModalOpen(false);
     navigate("/login");
   };
 
@@ -69,7 +82,7 @@ export const CustomerNavbar = () => {
             </div>
 
             <button
-              onClick={handleLogout}
+              onClick={() => setLogoutModalOpen(true)}
               className="bg-rose-600 text-white px-4 py-2 rounded-full hover:bg-rose-700 text-sm font-semibold"
             >
               Logout
@@ -81,6 +94,12 @@ export const CustomerNavbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <Outlet />
       </div>
+
+      <LogoutConfirmModal
+        isOpen={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 };
