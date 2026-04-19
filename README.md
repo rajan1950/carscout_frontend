@@ -133,8 +133,8 @@ npm run lint
 
 ## 9. Environment and Configuration
 
-- Store runtime variables in root `.env` files.
-- Keep environment-specific values outside source control where required by policy.
+- Centralize runtime configuration in `src/config/appConfig.js`.
+- Update endpoint and optional integration values in that config module.
 - Access API and integration logic through the service layer only, not directly from view components.
 
 ## 10. Engineering Standards

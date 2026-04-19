@@ -1,25 +1,6 @@
 import axios from "axios";
 import { readAuthSession } from "../utils/auth";
-
-const DEFAULT_EMAIL_ENDPOINTS = [
-  "http://localhost:4444/email/send",
-  "http://localhost:4444/email/send-purchase",
-  "http://localhost:4444/mail/send",
-  "http://localhost:4444/mailer/send",
-];
-
-const getEmailEndpoints = () => {
-  const envEndpoints = String(import.meta.env.VITE_PURCHASE_EMAIL_ENDPOINTS || "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  if (envEndpoints.length === 0) {
-    return DEFAULT_EMAIL_ENDPOINTS;
-  }
-
-  return [...new Set([...envEndpoints, ...DEFAULT_EMAIL_ENDPOINTS])];
-};
+import { APP_CONFIG } from "../config/appConfig";
 
 const getAuthHeaders = () => {
   const token = readAuthSession()?.token;
@@ -44,7 +25,7 @@ export const sendTransactionalEmailApi = async (payload) => {
     metadata: payload?.metadata || {},
   };
 
-  const EMAIL_ENDPOINTS = getEmailEndpoints();
+  const EMAIL_ENDPOINTS = APP_CONFIG.email.endpoints;
   let lastError = null;
 
   for (const endpoint of EMAIL_ENDPOINTS) {
@@ -64,9 +45,9 @@ export const sendTransactionalEmailApi = async (payload) => {
   }
 
   if (lastError) {
-    const emailJsServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-    const emailJsTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-    const emailJsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+    const emailJsServiceId = APP_CONFIG.email.emailJs.serviceId;
+    const emailJsTemplateId = APP_CONFIG.email.emailJs.templateId;
+    const emailJsPublicKey = APP_CONFIG.email.emailJs.publicKey;
 
     const hasEmailJsConfig = Boolean(emailJsServiceId && emailJsTemplateId && emailJsPublicKey);
 
@@ -108,7 +89,7 @@ export const sendTransactionalEmailApi = async (payload) => {
     }
 
     throw new Error(
-      "Email sending failed: backend route not found and EmailJS is not configured. Set VITE_PURCHASE_EMAIL_ENDPOINTS or EmailJS env keys."
+      "Email sending failed: backend route not found and EmailJS fallback is not configured in src/config/appConfig.js."
     );
   }
 

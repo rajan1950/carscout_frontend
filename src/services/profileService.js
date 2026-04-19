@@ -1,9 +1,10 @@
  import axios from "axios";
 import { readAuthSession } from "../utils/auth";
+import { APP_CONFIG } from "../config/appConfig";
 
-const PROFILE_URL = "http://localhost:4444/user/profile";
+const PROFILE_URL = `${APP_CONFIG.apiBaseUrl}/user/profile`;
 
-const isDev = Boolean(import.meta.env.DEV);
+const isDev = APP_CONFIG.logs.enableProfileApiLogs;
 
 const logProfileApi = ({ method, url, payloadKeys, status }) => {
   if (!isDev) {
