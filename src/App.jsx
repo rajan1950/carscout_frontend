@@ -3,7 +3,6 @@ import AppRouter from "./routes/AppRouter"
 import { NotificationProvider } from "./context/NotificationContext"
 
 function App() {
-
  //  axios.defaults.baseURL = "http://localhost:5555"
 
   return (
