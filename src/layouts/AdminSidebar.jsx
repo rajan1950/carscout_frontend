@@ -14,12 +14,14 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { ADMIN_SETTINGS_EVENT, readAdminSettings } from "../components/admin/adminPanelSettings";
 import { AUTH_SESSION_EVENT, clearAuthSession, getAuthProfile } from "../utils/auth";
+import { LogoutConfirmModal } from "../components/common/LogoutConfirmModal";
 
 export const AdminSidebar = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [adminProfile, setAdminProfile] = useState(() => getAuthProfile());
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
   const navSections = [
     {
@@ -75,8 +77,18 @@ export const AdminSidebar = () => {
     };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = ({ reason, details }) => {
+    try {
+      window.localStorage.setItem(
+        "carscout.lastLogoutMeta",
+        JSON.stringify({ reason, details, at: new Date().toISOString() })
+      );
+    } catch {
+      // Ignore non-critical local storage failures.
+    }
+
     clearAuthSession();
+    setLogoutModalOpen(false);
     navigate("/");
   };
 
@@ -240,7 +252,7 @@ export const AdminSidebar = () => {
             {collapsed && <span>🏠</span>}
           </button>
           <button
-            onClick={handleLogout}
+            onClick={() => setLogoutModalOpen(true)}
             className={`w-full bg-red-600 py-2.5 rounded-xl hover:bg-red-700 flex items-center ${collapsed ? 'justify-center' : 'justify-center gap-2'}`}
           >
             <LogoutIcon fontSize="small" />
@@ -253,6 +265,12 @@ export const AdminSidebar = () => {
       <div className="flex-1 p-6">
         <Outlet />
       </div>
+
+      <LogoutConfirmModal
+        isOpen={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 };
