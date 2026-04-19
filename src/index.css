@@ -1,5 +1,38 @@
 @import "tailwindcss";
 
+@keyframes splashLoad {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(60%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+@keyframes roadMove {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes carHop {
+  0% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.02);
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+}
+
 /* Tailwind v4 theme tokens used across the app.
    These enable utilities like `bg-primary-600`, `from-dark-900`, etc. */
 @theme {
