@@ -20,6 +20,10 @@ import { LogoutConfirmModal } from "../components/common/LogoutConfirmModal";
 export const AdminSidebar = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(true);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  );
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [adminProfile, setAdminProfile] = useState(() => getAuthProfile());
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -79,6 +83,20 @@ export const AdminSidebar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+
+      if (!mobile) {
+        setMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleLogout = ({ reason, details }) => {
     try {
       window.localStorage.setItem(
@@ -91,6 +109,7 @@ export const AdminSidebar = () => {
 
     clearAuthSession();
     setLogoutModalOpen(false);
+    setMobileSidebarOpen(false);
     navigate("/");
   };
 
@@ -120,21 +139,39 @@ export const AdminSidebar = () => {
     .map((part) => part[0]?.toUpperCase() || "")
     .join("") || "A";
 
+  const isSidebarCollapsed = isMobile ? false : collapsed;
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="relative flex min-h-screen bg-gray-100">
+
+      {isMobile && mobileSidebarOpen ? (
+        <button
+          type="button"
+          aria-label="Close sidebar overlay"
+          className="fixed inset-0 z-30 bg-black/40"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      ) : null}
 
       {/* Sidebar */}
       <div
         className={`${
-          collapsed ? "w-20" : "w-72"
+          isSidebarCollapsed ? "lg:w-20" : "lg:w-72"
+        } ${
+          isMobile
+            ? `fixed inset-y-0 left-0 z-40 w-72 transform ${
+                mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+              }`
+            : "relative"
         } bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white transition-all duration-300 flex flex-col border-r border-slate-800`}
       >
         {/* Top Header + Profile */}
         <div className="border-b border-slate-800 p-4">
-          <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} h-12`}>
-            {!collapsed && (
+          <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} h-12`}>
+            {!isSidebarCollapsed && (
               <Link
                 to="dashboard"
+                onClick={() => setMobileSidebarOpen(false)}
                 className="flex items-center gap-2"
                 title="Go to dashboard"
               >
@@ -148,15 +185,22 @@ export const AdminSidebar = () => {
               </Link>
             )}
             <button
-              onClick={() => setCollapsed(!collapsed)}
+              onClick={() => {
+                if (isMobile) {
+                  setMobileSidebarOpen(false);
+                  return;
+                }
+
+                setCollapsed(!collapsed);
+              }}
               className="w-10 h-10 bg-slate-800 rounded-full hover:bg-slate-700 flex items-center justify-center border border-slate-700"
-              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={isMobile ? "Close sidebar" : collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              <span>☰</span>
+              <span>{isMobile ? "X" : "☰"}</span>
             </button>
           </div>
 
-          {!collapsed ? (
+          {!isSidebarCollapsed ? (
             <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-900/80 p-3.5 shadow-inner shadow-black/20">
               <div className="flex items-center gap-3">
                 {adminImage ? (
@@ -197,7 +241,7 @@ export const AdminSidebar = () => {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
-          {!collapsed && (
+          {!isSidebarCollapsed && (
             <div className="mb-4">
               <input
                 type="text"
@@ -211,7 +255,7 @@ export const AdminSidebar = () => {
 
           {filteredSections.map((section) => (
             <div key={section.title} className="mb-4 last:mb-0">
-              {!collapsed && (
+              {!isSidebarCollapsed && (
                 <p className="px-2 mb-2 text-[11px] font-semibold tracking-wider uppercase text-slate-500">
                   {section.title}
                 </p>
@@ -225,13 +269,14 @@ export const AdminSidebar = () => {
                     <NavLink
                       key={item.to}
                       to={item.to}
+                      onClick={() => setMobileSidebarOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-2.5 rounded-xl transition ${navStyle({ isActive })}`
+                        `flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'} px-4 py-2.5 rounded-xl transition ${navStyle({ isActive })}`
                       }
                       title={item.label}
                     >
                       <Icon fontSize="small" />
-                      {!collapsed && <span>{item.label}</span>}
+                      {!isSidebarCollapsed && <span>{item.label}</span>}
                     </NavLink>
                   );
                 })}
@@ -239,7 +284,7 @@ export const AdminSidebar = () => {
             </div>
           ))}
 
-          {!collapsed && filteredSections.length === 0 && (
+          {!isSidebarCollapsed && filteredSections.length === 0 && (
             <p className="px-2 text-sm text-slate-400">No modules found for this search.</p>
           )}
         </nav>
@@ -247,25 +292,41 @@ export const AdminSidebar = () => {
         {/* Bottom Controls */}
         <div className="p-4 border-t border-slate-800 space-y-2.5">
           <button
-            onClick={() => navigate("/")}
-            className={`w-full bg-slate-800 py-2.5 rounded-xl hover:bg-slate-700 border border-slate-700 flex items-center ${collapsed ? 'justify-center' : 'justify-center gap-2'}`}
+            onClick={() => {
+              setMobileSidebarOpen(false);
+              navigate("/");
+            }}
+            className={`w-full bg-slate-800 py-2.5 rounded-xl hover:bg-slate-700 border border-slate-700 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-center gap-2'}`}
           >
-            {!collapsed && <span>Go to Website</span>}
-            {collapsed && <span>🏠</span>}
+            {!isSidebarCollapsed && <span>Go to Website</span>}
+            {isSidebarCollapsed && <span>🏠</span>}
           </button>
           <button
             onClick={() => setLogoutModalOpen(true)}
-            className={`w-full bg-red-600 py-2.5 rounded-xl hover:bg-red-700 flex items-center ${collapsed ? 'justify-center' : 'justify-center gap-2'}`}
+            className={`w-full bg-red-600 py-2.5 rounded-xl hover:bg-red-700 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-center gap-2'}`}
           >
             <LogoutIcon fontSize="small" />
-            {!collapsed && <span>Logout</span>}
+            {!isSidebarCollapsed && <span>Logout</span>}
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 min-w-0">
+        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(true)}
+            className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800"
+          >
+            Menu
+          </button>
+          <p className="truncate text-sm font-semibold text-slate-700">Admin Panel</p>
+        </div>
+
+        <div className="p-4 sm:p-5 lg:p-6">
         <Outlet />
+        </div>
       </div>
 
       <LogoutConfirmModal
