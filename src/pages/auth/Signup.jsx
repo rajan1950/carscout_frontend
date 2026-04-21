@@ -70,9 +70,9 @@ export const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-200 to-purple-200">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-200 to-purple-200 px-4 py-8">
 
-      <div className="bg-gray-900 text-white p-8 rounded-2xl shadow-xl w-[400px]">
+      <div className="w-full max-w-md bg-gray-900 text-white p-6 sm:p-8 rounded-2xl shadow-xl">
 
         <h2 className="text-3xl font-bold text-center mb-2">
           Create Account
