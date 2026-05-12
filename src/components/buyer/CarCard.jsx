@@ -22,42 +22,42 @@ export const CarCard = ({
       <img
         src={imageUrl}
         alt={`${car.brand || "Car"} ${car.model || ""}`}
-        className="h-44 w-full object-cover"
+        className="w-full aspect-video object-cover"
         onError={(event) => {
           event.currentTarget.onerror = null;
           event.currentTarget.src = CAR_IMAGE_FALLBACK;
         }}
       />
-      <div className="p-4">
-        <h3 className="text-xl font-black text-slate-900">{car.brand || "Unknown"} {car.model || "Model"}</h3>
-        <p className="text-slate-600 text-sm flex flex-wrap gap-3 mt-1">
+      <div className="p-3 sm:p-4">
+        <h3 className="text-base sm:text-lg lg:text-xl font-black text-slate-900">{car.brand || "Unknown"} {car.model || "Model"}</h3>
+        <p className="text-slate-600 text-xs sm:text-sm flex flex-wrap gap-2 sm:gap-3 mt-1">
           <span className="inline-flex items-center gap-1"><FaRoad className="text-slate-400" /> {car.year || "N/A"}</span>
           <span className="inline-flex items-center gap-1"><FaGasPump className="text-slate-400" /> {car.fuelType || "N/A"}</span>
         </p>
-        <p className="text-amber-700 font-black mt-2 text-lg">{formatPrice(car.price)}</p>
+        <p className="text-amber-700 font-black mt-2 text-base sm:text-lg">{formatPrice(car.price)}</p>
 
-        <div className="grid grid-cols-2 gap-2 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 sm:mt-4">
           <button
             type="button"
             onClick={() => onViewDetails(car)}
-            className="bg-slate-900 hover:bg-black text-white rounded-lg py-2 text-sm font-semibold"
+            className="bg-slate-900 hover:bg-black text-white rounded-lg py-2 text-xs sm:text-sm font-semibold"
           >
             View Details
           </button>
           <button
             type="button"
             onClick={() => onBuyNow(car)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-2 text-sm font-semibold"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-2 text-xs sm:text-sm font-semibold"
           >
             Buy Now
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           <button
             type="button"
             onClick={() => onToggleFavorite(car._id)}
-            className={`rounded-lg py-2 text-sm font-semibold ${
+            className={`rounded-lg py-2 text-xs sm:text-sm font-semibold ${
               isFavorite
                 ? "bg-rose-600 text-white"
                 : "bg-rose-50 text-rose-700"
@@ -68,7 +68,7 @@ export const CarCard = ({
           <button
             type="button"
             onClick={() => onToggleCompare(car)}
-            className={`rounded-lg py-2 text-sm font-semibold ${
+            className={`rounded-lg py-2 text-xs sm:text-sm font-semibold ${
               isCompared
                 ? "bg-cyan-700 text-white"
                 : "border border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -78,7 +78,7 @@ export const CarCard = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           <button
             type="button"
             onClick={() => onOpenInquiry(car)}
