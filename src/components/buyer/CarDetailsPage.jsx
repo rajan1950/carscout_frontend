@@ -401,33 +401,33 @@ export const CarDetailsPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-12">
-      <section className="rounded-3xl border border-cyan-100 bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-800 text-white p-6 sm:p-8 mb-6">
+      <section className="rounded-3xl border border-cyan-100 bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-800 text-white p-4 sm:p-6 md:p-8 mb-6">
         <p className="uppercase text-xs tracking-[0.18em] text-cyan-200">Car Detail Page</p>
-        <h1 className="text-3xl md:text-4xl font-black mt-2">{car.brand || "Car"} {car.model || "Model"}</h1>
-        <p className="text-cyan-100 mt-3 max-w-3xl">Detailed vehicle information with seller details, specs, and quick actions.</p>
-        <div className="mt-5 flex flex-wrap gap-3">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mt-2">{car.brand || "Car"} {car.model || "Model"}</h1>
+        <p className="text-cyan-100 mt-3 max-w-3xl text-sm sm:text-base">Detailed vehicle information with seller details, specs, and quick actions.</p>
+        <div className="mt-5 flex flex-wrap gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => navigate(`/buy/${car._id}`)}
-            className="bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 rounded-xl text-white font-semibold"
+            className="bg-emerald-600 hover:bg-emerald-700 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-white font-semibold text-sm sm:text-base"
           >
             Buy Now
           </button>
           <Link
             to="/customer"
-            className="bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 rounded-xl text-white font-semibold"
+            className="bg-white/10 hover:bg-white/20 border border-white/20 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-white font-semibold text-sm sm:text-base"
           >
             Back to Inventory
           </Link>
         </div>
       </section>
 
-      <section className="grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+      <section className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-4 sm:gap-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 md:p-5">
           <img
             src={imageUrl}
             alt={`${car.brand || "Car"} ${car.model || ""}`}
-            className="w-full h-72 md:h-96 object-cover rounded-xl border border-slate-200"
+            className="w-full aspect-video object-cover rounded-xl border border-slate-200"
             onError={(event) => {
               event.currentTarget.onerror = null;
               event.currentTarget.src = CAR_IMAGE_FALLBACK;
@@ -435,7 +435,7 @@ export const CarDetailsPage = () => {
           />
 
           {galleryImages.length > 1 && (
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-2 sm:mt-3 grid grid-cols-3 sm:grid-cols-4 gap-1 sm:gap-2">
               {galleryImages.slice(0, 3).map((image, index) => (
                 <button
                   key={`${image}-${index}`}
@@ -450,7 +450,7 @@ export const CarDetailsPage = () => {
                   <img
                     src={image}
                     alt={`${car.brand || "Car"} ${car.model || ""} view ${index + 1}`}
-                    className="h-24 w-full object-cover"
+                    className="h-16 sm:h-20 w-full object-cover"
                     onError={(event) => {
                       event.currentTarget.onerror = null;
                       event.currentTarget.src = CAR_IMAGE_FALLBACK;
@@ -461,19 +461,19 @@ export const CarDetailsPage = () => {
             </div>
           )}
 
-          <div className="mt-5 rounded-xl border border-slate-200 p-4 bg-slate-50">
+          <div className="mt-3 sm:mt-5 rounded-xl border border-slate-200 p-3 sm:p-4 bg-slate-50">
             <p className="text-xs uppercase tracking-[0.14em] text-slate-500 font-semibold">Description</p>
-            <p className="text-slate-700 mt-2 leading-relaxed">
+            <p className="text-slate-700 mt-2 text-sm leading-relaxed">
               {car.description || "No detailed description available for this car yet."}
             </p>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 sm:p-4">
             <p className="text-xs uppercase tracking-[0.14em] text-amber-700 font-semibold">Price</p>
-            <p className="text-3xl text-amber-700 font-black mt-1">{formatPrice(car.price)}</p>
-            <div className="flex flex-wrap gap-2 mt-3">
+            <p className="text-2xl sm:text-3xl text-amber-700 font-black mt-1">{formatPrice(car.price)}</p>
+            <div className="flex flex-wrap gap-2 mt-2 sm:mt-3">
               {pricePerKm && (
                 <span className="rounded-full bg-white border border-amber-200 px-2.5 py-1 text-xs font-semibold text-amber-800">
                   ~ {formatPrice(pricePerKm)} / km
@@ -489,9 +489,9 @@ export const CarDetailsPage = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-4">
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 sm:p-4">
             <p className="text-xs uppercase tracking-[0.14em] text-slate-500 font-semibold">Vehicle Specs</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 mt-2 sm:mt-3">
               {specItems.map((item) => {
                 const Icon = item.icon;
 
@@ -513,13 +513,13 @@ export const CarDetailsPage = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+          <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3 sm:p-4">
             <p className="text-xs uppercase tracking-[0.14em] text-cyan-700 font-semibold">Added By Details</p>
-            <div className="grid gap-2 mt-3">
-              <p className="rounded-lg bg-white p-2.5 text-sm text-slate-700">
+            <div className="grid gap-2 mt-2 sm:mt-3">
+              <p className="rounded-lg bg-white p-2 sm:p-2.5 text-xs sm:text-sm text-slate-700">
                 <span className="font-semibold text-slate-900">Name:</span> {addedBy.name || "-"}
               </p>
-              <p className="rounded-lg bg-white p-2.5 text-sm text-slate-700 break-all">
+              <p className="rounded-lg bg-white p-2 sm:p-2.5 text-xs sm:text-sm text-slate-700 break-all">
                 <span className="font-semibold text-slate-900">Email:</span> {addedBy.email || "-"}
               </p>
             </div>
@@ -527,14 +527,14 @@ export const CarDetailsPage = () => {
         </div>
       </section>
 
-      <section className="grid lg:grid-cols-2 gap-6 mt-8">
-        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5">
-          <h2 className="text-xl font-black text-slate-900">Make An Offer</h2>
-          <p className="text-slate-600 text-sm mt-1">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6 sm:mt-8">
+        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 sm:p-5">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900">Make An Offer</h2>
+          <p className="text-slate-600 text-xs sm:text-sm mt-1">
             Send a direct price offer to the seller and negotiate from the offer center.
           </p>
 
-          <form onSubmit={submitOffer} className="space-y-3 mt-4">
+          <form onSubmit={submitOffer} className="space-y-2 sm:space-y-3 mt-3 sm:mt-4">
             <input
               type="number"
               min="1"
@@ -542,21 +542,21 @@ export const CarDetailsPage = () => {
               onChange={(event) => setOfferForm((prev) => ({ ...prev, offeredPrice: event.target.value }))}
               placeholder={`Suggested: ${Math.round(numericPrice * 0.95) || 0}`}
               required
-              className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-300"
+              className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-violet-300"
             />
             <textarea
               value={offerForm.message}
               onChange={(event) => setOfferForm((prev) => ({ ...prev, message: event.target.value }))}
               placeholder="I am ready to proceed quickly if this price works for you."
-              rows={3}
-              className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-300"
+              rows={2}
+              className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-violet-300"
             />
 
             {!sellerId && sellerCandidates.length > 0 && (
               <select
                 value={selectedSellerId}
                 onChange={(event) => setSelectedSellerId(event.target.value)}
-                className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-300"
+                className="w-full rounded-xl border border-violet-200 bg-white px-3 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-violet-300"
                 required
               >
                 <option value="">Select seller</option>
@@ -568,17 +568,17 @@ export const CarDetailsPage = () => {
               </select>
             )}
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2">
               <button
                 type="submit"
                 disabled={isSubmittingOffer || (!sellerId && sellerCandidates.length > 0 && !selectedSellerId)}
-                className="rounded-xl bg-violet-700 hover:bg-violet-800 text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                className="rounded-xl bg-violet-700 hover:bg-violet-800 text-white px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSubmittingOffer ? "Sending Offer..." : "Send Offer"}
               </button>
               <Link
                 to="/customer/offers"
-                className="rounded-xl border border-violet-200 bg-white px-4 py-2.5 text-sm font-semibold text-violet-800 hover:bg-violet-100"
+                className="rounded-xl border border-violet-200 bg-white px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-violet-800 hover:bg-violet-100 text-center"
               >
                 View Offers
               </Link>
@@ -586,18 +586,18 @@ export const CarDetailsPage = () => {
           </form>
         </div>
 
-        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-5">
-          <h2 className="text-xl font-black text-slate-900">Send Inquiry</h2>
-          <p className="text-slate-600 text-sm mt-1">Ask seller about condition, negotiation, and paperwork.</p>
+        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 sm:p-5">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900">Send Inquiry</h2>
+          <p className="text-slate-600 text-xs sm:text-sm mt-1">Ask seller about condition, negotiation, and paperwork.</p>
 
-          <form onSubmit={submitInquiry} className="space-y-3 mt-4">
+          <form onSubmit={submitInquiry} className="space-y-2 sm:space-y-3 mt-3 sm:mt-4">
             <input
               type="text"
               value={inquiryForm.name}
               onChange={(event) => setInquiryForm((prev) => ({ ...prev, name: event.target.value }))}
               placeholder="Your name"
               required
-              className="w-full rounded-xl border border-cyan-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-cyan-300"
+              className="w-full rounded-xl border border-cyan-200 bg-white px-3 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-cyan-300"
             />
             <input
               type="email"
