@@ -201,30 +201,30 @@ export const AdminSidebar = () => {
           </div>
 
           {!isSidebarCollapsed ? (
-            <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-900/80 p-3.5 shadow-inner shadow-black/20">
-              <div className="flex items-center gap-3">
+            <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-900/80 p-2.5 sm:p-3.5 shadow-inner shadow-black/20">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {adminImage ? (
                   <img
                     src={adminImage}
                     alt="Admin profile"
-                    className="h-11 w-11 rounded-full object-cover border border-slate-600"
+                    className="h-8 sm:h-11 w-8 sm:w-11 rounded-full object-cover border border-slate-600 flex-shrink-0"
                   />
                 ) : (
-                  <div className="h-11 w-11 rounded-full bg-gradient-to-br from-fuchsia-600 to-violet-600 text-white flex items-center justify-center text-sm font-bold">
+                  <div className="h-8 sm:h-11 w-8 sm:w-11 rounded-full bg-gradient-to-br from-fuchsia-600 to-violet-600 text-white flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
                     {adminInitials}
                   </div>
                 )}
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white truncate leading-tight">{adminName}</p>
-                  <p className="text-xs text-slate-400 truncate mt-0.5">{adminEmail}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-semibold text-white truncate leading-tight">{adminName}</p>
+                  <p className="text-[10px] sm:text-xs text-slate-400 truncate mt-0.5">{adminEmail}</p>
                 </div>
               </div>
 
-              <div className="mt-3 flex items-center justify-between">
-                <p className="inline-flex rounded-md bg-fuchsia-500/20 px-2 py-1 text-[11px] font-semibold tracking-wide text-fuchsia-300 border border-fuchsia-500/30">
+              <div className="mt-2.5 sm:mt-3 flex items-center justify-between">
+                <p className="inline-flex rounded-md bg-fuchsia-500/20 px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-semibold tracking-wide text-fuchsia-300 border border-fuchsia-500/30">
                   {adminRoleLabel}
                 </p>
-                <span className="inline-flex items-center gap-1 text-[11px] text-emerald-300">
+                <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-emerald-300">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   Online
                 </span>
