@@ -7,7 +7,8 @@ import {
   FaBolt,
   FaGasPump,
   FaRoad,
-} from "react-icons/fa";
+} 
+from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import UserNavbar from "../../layouts/UserNavbar";
@@ -338,15 +339,15 @@ const Home = () => {
         </div>
       </section>
 
-      <section id="featured-cars" className="max-w-7xl mx-auto px-6 py-16">
+      <section id="featured-cars" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
 
-        <h2 className="text-3xl font-black text-center mb-12 text-slate-900">Featured Cars To Buy</h2>
+        <h2 className="text-2xl sm:text-3xl font-black text-center mb-8 sm:mb-12 text-slate-900">Featured Cars To Buy</h2>
 
         {loading && <p className="text-center text-slate-600">Loading cars...</p>}
         {error && <p className="text-center text-red-600">{error}</p>}
 
         {!loading && !error && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-8">
             {featuredCars.map((car) => (
               <motion.div
                 whileHover={{ y: -6 }}
@@ -356,15 +357,15 @@ const Home = () => {
                 <img
                   src={resolveCarImageFromCar(car) || CAR_IMAGE_FALLBACK}
                   alt={`${car.brand || "Car"} ${car.model || ""}`}
-                  className="h-48 w-full object-cover"
+                  className="h-40 sm:h-52 lg:h-64 w-full object-cover"
                   onError={(event) => {
                     event.currentTarget.onerror = null;
                     event.currentTarget.src = CAR_IMAGE_FALLBACK;
                   }}
                 />
 
-                <div className="p-4">
-                  <h3 className="text-xl font-bold text-slate-900">
+                <div className="p-3 sm:p-4">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">
                     {car.brand || "Unknown"} {car.model || "Model"}
                   </h3>
 
@@ -374,11 +375,11 @@ const Home = () => {
                     <span className="inline-flex items-center gap-1"><FaBolt className="text-slate-400" /> {car.transmission || "N/A"}</span>
                   </p>
 
-                  <p className="text-amber-700 font-bold mt-2 text-lg">{formatPrice(car.price)}</p>
+                  <p className="text-amber-700 font-bold mt-2 text-base sm:text-lg">{formatPrice(car.price)}</p>
 
-                  <p className="text-sm text-slate-600 mt-1">Mileage: {car.mileage || "N/A"} km</p>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">Mileage: {car.mileage || "N/A"} km</p>
 
-                  <div className="mt-4">
+                  <div className="mt-3 sm:mt-4">
                     <Link
                       to="/customer"
                       className="inline-flex w-full items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition"
