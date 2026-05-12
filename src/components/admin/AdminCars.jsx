@@ -232,20 +232,20 @@ export const AdminCars = () => {
 
   return (
     <div>
-      <h2 className="text-4xl font-bold text-slate-800 mb-8">Car Management</h2>
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800 mb-4 sm:mb-8">Car Management</h2>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-6 flex flex-col lg:flex-row gap-3 lg:items-center">
+      <div className="bg-white rounded-2xl border border-gray-200 p-3 sm:p-4 mb-6 flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center">
         <input
           type="text"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search cars..."
-          className="w-full lg:flex-1 border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-indigo-300"
+          className="flex-1 border border-gray-300 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
         />
         <button
           type="button"
           onClick={openCreateModal}
-          className="w-full lg:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-3 font-semibold"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 sm:px-6 py-2.5 sm:py-3 font-semibold text-sm sm:text-base whitespace-nowrap"
         >
           + Add Car
         </button>
@@ -256,17 +256,17 @@ export const AdminCars = () => {
 
       {!loading && !error && (
         <div className="overflow-x-auto bg-white rounded-2xl border border-gray-200">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+          <table className="min-w-full text-xs sm:text-sm">
+            <thead className="bg-gray-50 text-gray-600 uppercase text-[10px] sm:text-xs tracking-wider">
               <tr>
-                <th className="text-left px-4 py-3">Brand</th>
-                <th className="text-left px-4 py-3">Model</th>
-                <th className="text-left px-4 py-3">Year</th>
-                <th className="text-left px-4 py-3">Price</th>
-                <th className="text-left px-4 py-3">Fuel</th>
-                <th className="text-left px-4 py-3">Added By Name</th>
-                <th className="text-left px-4 py-3">Added By Email</th>
-                <th className="text-left px-4 py-3">Actions</th>
+                <th className="text-left px-2 sm:px-4 py-2 sm:py-3">Brand</th>
+                <th className="text-left px-2 sm:px-4 py-2 sm:py-3">Model</th>
+                <th className="text-left px-2 sm:px-4 py-2 sm:py-3">Year</th>
+                <th className="text-left px-2 sm:px-4 py-2 sm:py-3">Price</th>
+                <th className="hidden sm:table-cell text-left px-2 sm:px-4 py-2 sm:py-3">Fuel</th>
+                <th className="hidden md:table-cell text-left px-2 sm:px-4 py-2 sm:py-3">Added By</th>
+                <th className="hidden md:table-cell text-left px-2 sm:px-4 py-2 sm:py-3">Email</th>
+                <th className="text-left px-2 sm:px-4 py-2 sm:py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -275,23 +275,23 @@ export const AdminCars = () => {
 
                 return (
                 <tr key={car._id} className="border-t border-gray-100">
-                  <td className="px-4 py-4 font-semibold text-slate-800">{car.brand || "-"}</td>
-                  <td className="px-4 py-4 text-gray-700">{car.model || "-"}</td>
-                  <td className="px-4 py-4 text-gray-600">{car.year || "-"}</td>
-                  <td className="px-4 py-4 text-gray-600">{car.price || "-"}</td>
-                  <td className="px-4 py-4 text-gray-600">{car.fuelType || "-"}</td>
-                  <td className="px-4 py-4 text-gray-600">{addedBy.name}</td>
-                  <td className="px-4 py-4 text-gray-600">{addedBy.email}</td>
-                  <td className="px-4 py-3 flex gap-2">
+                  <td className="px-2 sm:px-4 py-3 sm:py-4 font-semibold text-slate-800 text-xs sm:text-sm">{car.brand || "-"}</td>
+                  <td className="px-2 sm:px-4 py-3 sm:py-4 text-gray-700 text-xs sm:text-sm">{car.model || "-"}</td>
+                  <td className="px-2 sm:px-4 py-3 sm:py-4 text-gray-600 text-xs sm:text-sm">{car.year || "-"}</td>
+                  <td className="px-2 sm:px-4 py-3 sm:py-4 text-gray-600 text-xs sm:text-sm">{car.price || "-"}</td>
+                  <td className="hidden sm:table-cell px-2 sm:px-4 py-3 sm:py-4 text-gray-600 text-xs sm:text-sm">{car.fuelType || "-"}</td>
+                  <td className="hidden md:table-cell px-2 sm:px-4 py-3 sm:py-4 text-gray-600 text-xs sm:text-sm">{addedBy.name}</td>
+                  <td className="hidden md:table-cell px-2 sm:px-4 py-3 sm:py-4 text-gray-600 text-xs sm:text-sm">{addedBy.email}</td>
+                  <td className="px-2 sm:px-4 py-3 sm:py-4 flex flex-col sm:flex-row gap-1 sm:gap-2">
                     <button
                       onClick={() => startEdit(car)}
-                      className="bg-slate-100 hover:bg-slate-200 text-indigo-700 px-3 py-2 rounded-lg"
+                      className="bg-slate-100 hover:bg-slate-200 text-indigo-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(car._id)}
-                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg"
+                      className="bg-red-50 hover:bg-red-100 text-red-600 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap"
                     >
                       Delete
                     </button>
@@ -300,7 +300,7 @@ export const AdminCars = () => {
               );})}
               {filteredCars.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={8} className="px-2 sm:px-4 py-6 text-center text-gray-500 text-sm">
                     No cars found
                   </td>
                 </tr>
@@ -316,11 +316,11 @@ export const AdminCars = () => {
           onClick={closeModal}
         >
           <div
-            className="w-full max-w-3xl bg-white rounded-2xl border border-gray-200 shadow-2xl"
+            className="w-full max-w-2xl sm:max-w-3xl bg-white rounded-2xl border border-gray-200 shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-5 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-slate-800">
+            <div className="flex items-center justify-between p-3 sm:p-5 border-b border-gray-200 sticky top-0 bg-white">
+              <h3 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800">
                 {editingCarId ? "Update Car" : "Add Car"}
               </h3>
               <button
@@ -333,14 +333,14 @@ export const AdminCars = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <form onSubmit={handleSubmit} className="p-3 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               <input
                 name="brand"
                 value={form.brand}
                 onChange={handleChange}
                 placeholder="Brand"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <input
                 name="model"
@@ -348,7 +348,7 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="Model"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <input
                 name="city"
@@ -356,7 +356,7 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="City"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <input
                 type="number"
@@ -365,7 +365,7 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="Year"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <input
                 name="owner"
@@ -373,7 +373,7 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="Owner (e.g. 1 owner)"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <input
                 type="number"
@@ -382,7 +382,7 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="Price"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <input
                 name="mileage"
@@ -390,7 +390,7 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="Mileage"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <input
                 name="fuelType"
@@ -398,7 +398,7 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="Fuel type"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <input
                 name="transmission"
@@ -406,7 +406,7 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="Transmission"
                 required
-                className="border border-gray-300 rounded-xl px-3 py-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300"
               />
               <textarea
                 name="description"
@@ -414,10 +414,10 @@ export const AdminCars = () => {
                 onChange={handleChange}
                 placeholder="Description"
                 rows={3}
-                className="border border-gray-300 rounded-xl px-3 py-2 md:col-span-2"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300 sm:col-span-2"
               />
               {!editingCarId && (
-                <div className="md:col-span-2">
+                <div className="sm:col-span-2">
                   <input
                     type="file"
                     accept="image/*"
@@ -426,23 +426,23 @@ export const AdminCars = () => {
                       setForm((prev) => ({ ...prev, imageFile: file }));
                     }}
                     required={!editingCarId}
-                    className="border border-gray-300 rounded-xl px-3 py-2 w-full"
+                    className="border border-gray-300 rounded-xl px-3 py-2 w-full text-sm"
                   />
                 </div>
               )}
 
-              <div className="md:col-span-2 flex justify-end gap-2 pt-2">
+              <div className="sm:col-span-2 flex flex-col sm:flex-row justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold"
                 >
                   {submitting
                     ? "Please wait..."
