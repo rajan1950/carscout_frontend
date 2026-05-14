@@ -7,8 +7,7 @@ import {
   FaBolt,
   FaGasPump,
   FaRoad,
-} 
-from "react-icons/fa";
+} from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import UserNavbar from "../../layouts/UserNavbar";
@@ -44,12 +43,11 @@ const Home = () => {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const [carsRes, summaryRes, testDriveRes] =
-          await Promise.allSettled([
-            axios.get("http://localhost:4444/car/all"),
-            axios.get("http://localhost:4444/admin/dashboard"),
-            axios.get("http://localhost:4444/testdrive/all"),
-          ]);
+        const [carsRes, summaryRes, testDriveRes] = await Promise.allSettled([
+          axios.get("http://localhost:4444/car/all"),
+          axios.get("http://localhost:4444/admin/dashboard"),
+          axios.get("http://localhost:4444/testdrive/all"),
+        ]);
 
         if (carsRes.status === "fulfilled") {
           setCars(Array.isArray(carsRes.value.data) ? carsRes.value.data : []);
@@ -106,9 +104,8 @@ const Home = () => {
 
     if (query.trim()) {
       const q = query.toLowerCase();
-      items = items.filter(
-        (car) =>
-          `${car.brand || ""} ${car.model || ""}`.toLowerCase().includes(q)
+      items = items.filter((car) =>
+        `${car.brand || ""} ${car.model || ""}`.toLowerCase().includes(q)
       );
     }
 
@@ -145,7 +142,6 @@ const Home = () => {
       navigate("/login");
       return;
     }
-
     setIsSellWizardOpen(true);
   };
 
@@ -153,10 +149,13 @@ const Home = () => {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f5f0e8_0%,_#f8f7f3_35%,_#eff3f4_100%)] text-slate-900">
       <UserNavbar />
 
+      {/* ───────────────── HERO SECTION ───────────────── */}
       <section className="relative overflow-hidden py-16 md:py-20">
         <div className="absolute -top-24 -left-20 h-72 w-72 rounded-full bg-amber-300/30 blur-3xl" />
         <div className="absolute -bottom-16 -right-14 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl" />
+
         <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-10 items-center">
+          {/* Left copy */}
           <div>
             <p className="uppercase tracking-[0.2em] text-xs md:text-sm text-amber-700 font-semibold mb-4">
               Premium Automotive Marketplace
@@ -177,32 +176,33 @@ const Home = () => {
               className="text-base md:text-lg mb-8 text-slate-700 max-w-2xl leading-relaxed"
             >
               Car Scout is built for both sides of the market. Buyers get verified inventory,
-              smart filtering, and quick actions. Sellers get faster listing flow, better visibility,
-              and lead-ready inquiries.
+              smart filtering, and quick actions. Sellers get faster listing flow, better
+              visibility, and lead-ready inquiries.
             </MotionP>
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 to="/customer"
-                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-full text-sm font-semibold"
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-full text-sm font-semibold transition"
               >
                 Start Buying <FaArrowRight />
               </Link>
               <button
                 type="button"
                 onClick={handleSellCarClick}
-                className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full text-sm font-semibold"
+                className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full text-sm font-semibold transition"
               >
                 Start Selling <FaArrowRight />
               </button>
               <a
                 href="#featured-cars"
-                className="border border-slate-300 hover:border-slate-700 px-6 py-3 rounded-full text-sm font-semibold text-slate-800"
+                className="border border-slate-300 hover:border-slate-700 px-6 py-3 rounded-full text-sm font-semibold text-slate-800 transition"
               >
                 Explore Inventory
               </a>
             </div>
 
+            {/* Stats */}
             <div className="grid sm:grid-cols-3 gap-3 mt-8">
               <div className="rounded-xl bg-white/90 border border-slate-200 px-4 py-3">
                 <p className="text-xs uppercase tracking-wide text-slate-500">Available Cars</p>
@@ -219,6 +219,7 @@ const Home = () => {
             </div>
           </div>
 
+          {/* Right — Deal Engine panel */}
           <MotionDiv
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -243,7 +244,7 @@ const Home = () => {
               />
               <button
                 type="button"
-                className="bg-slate-900 hover:bg-black px-6 flex items-center text-white"
+                className="bg-slate-900 hover:bg-black px-6 flex items-center text-white transition"
               >
                 <FaSearch />
               </button>
@@ -277,21 +278,21 @@ const Home = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/customer"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition"
                 >
                   Buy Cars
                 </Link>
                 <button
                   type="button"
                   onClick={handleSellCarClick}
-                  className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition"
                 >
                   Sell Car
                 </button>
                 {canOpenAdminPanel && (
                   <Link
                     to="/adminpanel/dashboard"
-                    className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                    className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-semibold transition"
                   >
                     Admin
                   </Link>
@@ -302,36 +303,65 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ───────────────── BUYER / SELLER CARDS ───────────────── */}
       <section className="max-w-7xl mx-auto px-6 pb-10">
         <div className="grid lg:grid-cols-2 gap-5">
+          {/* Buyer */}
           <div className="rounded-3xl bg-white border border-emerald-100 shadow-sm p-6">
-            <p className="text-xs uppercase tracking-widest text-emerald-700 font-semibold mb-2">Buyer Side</p>
-            <h3 className="font-black text-2xl text-slate-900 mb-4">Find The Right Car, Faster</h3>
+            <p className="text-xs uppercase tracking-widest text-emerald-700 font-semibold mb-2">
+              Buyer Side
+            </p>
+            <h3 className="font-black text-2xl text-slate-900 mb-4">
+              Find The Right Car, Faster
+            </h3>
             <div className="space-y-3 text-sm text-slate-700">
-              <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Search by brand, model, fuel and price.</p>
-              <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Review featured inventory and open buyer dashboard.</p>
-              <p className="flex items-center gap-2"><FaCheckCircle className="text-emerald-600" /> Move directly into buyer flow and compare options.</p>
+              <p className="flex items-center gap-2">
+                <FaCheckCircle className="text-emerald-600 flex-shrink-0" />
+                Search by brand, model, fuel and price.
+              </p>
+              <p className="flex items-center gap-2">
+                <FaCheckCircle className="text-emerald-600 flex-shrink-0" />
+                Review featured inventory and open buyer dashboard.
+              </p>
+              <p className="flex items-center gap-2">
+                <FaCheckCircle className="text-emerald-600 flex-shrink-0" />
+                Move directly into buyer flow and compare options.
+              </p>
             </div>
             <Link
               to="/customer"
-              className="inline-flex items-center gap-2 mt-5 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold"
+              className="inline-flex items-center gap-2 mt-5 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition"
             >
               Go To Buyer Dashboard <FaArrowRight />
             </Link>
           </div>
 
+          {/* Seller */}
           <div className="rounded-3xl bg-white border border-amber-100 shadow-sm p-6">
-            <p className="text-xs uppercase tracking-widest text-amber-700 font-semibold mb-2">Seller Side</p>
-            <h3 className="font-black text-2xl text-slate-900 mb-4">List, Manage, And Close More Deals</h3>
+            <p className="text-xs uppercase tracking-widest text-amber-700 font-semibold mb-2">
+              Seller Side
+            </p>
+            <h3 className="font-black text-2xl text-slate-900 mb-4">
+              List, Manage, And Close More Deals
+            </h3>
             <div className="space-y-3 text-sm text-slate-700">
-              <p className="flex items-center gap-2"><FaCheckCircle className="text-amber-600" /> Add car details with pricing and vehicle specs.</p>
-              <p className="flex items-center gap-2"><FaCheckCircle className="text-amber-600" /> Get buyer inquiries, messages, and review activity.</p>
-              <p className="flex items-center gap-2"><FaCheckCircle className="text-amber-600" /> Convert leads with test-drive scheduling flow.</p>
+              <p className="flex items-center gap-2">
+                <FaCheckCircle className="text-amber-600 flex-shrink-0" />
+                Add car details with pricing and vehicle specs.
+              </p>
+              <p className="flex items-center gap-2">
+                <FaCheckCircle className="text-amber-600 flex-shrink-0" />
+                Get buyer inquiries, messages, and review activity.
+              </p>
+              <p className="flex items-center gap-2">
+                <FaCheckCircle className="text-amber-600 flex-shrink-0" />
+                Convert leads with test-drive scheduling flow.
+              </p>
             </div>
             <button
               type="button"
               onClick={handleSellCarClick}
-              className="inline-flex items-center gap-2 mt-5 bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold"
+              className="inline-flex items-center gap-2 mt-5 bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition"
             >
               Go To Sell Car Form <FaArrowRight />
             </button>
@@ -339,52 +369,94 @@ const Home = () => {
         </div>
       </section>
 
-      <section id="featured-cars" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      {/* ───────────────── FEATURED CARS GRID ───────────────── */}
+      <section
+        id="featured-cars"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16"
+      >
+        <h2 className="text-2xl sm:text-3xl font-black text-center mb-8 sm:mb-12 text-slate-900">
+          Featured Cars To Buy
+        </h2>
 
-        <h2 className="text-2xl sm:text-3xl font-black text-center mb-8 sm:mb-12 text-slate-900">Featured Cars To Buy</h2>
+        {loading && (
+          <p className="text-center text-slate-600 py-10">Loading cars...</p>
+        )}
+        {error && (
+          <p className="text-center text-red-600 py-10">{error}</p>
+        )}
 
-        {loading && <p className="text-center text-slate-600">Loading cars...</p>}
-        {error && <p className="text-center text-red-600">{error}</p>}
-
-        {!loading && !error && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-8">
-            {featuredCars.map((car) => (
+        {!loading && !error && featuredCars.length > 0 && (
+          /*
+           * KEY FIX:
+           *  • items-stretch  → every card in a row grows to the tallest card's height
+           *  • Each motion.div gets  flex flex-col h-full  so it fills that height
+           *  • The image height is fixed (h-48) so all thumbnails are identical
+           *  • The content div is  flex flex-col flex-1  so it expands to fill remaining space
+           *  • mt-auto on the button wrapper pins "Buy Now" to the bottom of every card
+           */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 items-stretch">
+            {featuredCars.map((car, index) => (
               <motion.div
-                whileHover={{ y: -6 }}
                 key={car._id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden"
+                whileHover={{ y: -6, boxShadow: "0 20px 40px rgba(0,0,0,0.10)" }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: index * 0.05 }}
+                className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden flex flex-col h-full"
               >
-                <img
-                  src={resolveCarImageFromCar(car) || CAR_IMAGE_FALLBACK}
-                  alt={`${car.brand || "Car"} ${car.model || ""}`}
-                  className="h-40 sm:h-52 lg:h-64 w-full object-cover"
-                  onError={(event) => {
-                    event.currentTarget.onerror = null;
-                    event.currentTarget.src = CAR_IMAGE_FALLBACK;
-                  }}
-                />
+                {/* ── Fixed-height image ── */}
+                <div className="relative h-48 w-full flex-shrink-0 overflow-hidden bg-slate-100">
+                  <img
+                    src={resolveCarImageFromCar(car) || CAR_IMAGE_FALLBACK}
+                    alt={`${car.brand || "Car"} ${car.model || ""}`}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = CAR_IMAGE_FALLBACK;
+                    }}
+                  />
+                </div>
 
-                <div className="p-3 sm:p-4">
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">
+                {/* ── Card body — grows to fill remaining height ── */}
+                <div className="p-4 flex flex-col flex-1">
+                  {/* Title */}
+                  <h3 className="text-lg font-bold text-slate-900 leading-snug">
                     {car.brand || "Unknown"} {car.model || "Model"}
                   </h3>
 
-                  <p className="text-slate-500 flex flex-wrap gap-3 text-sm mt-1">
-                    <span className="inline-flex items-center gap-1"><FaRoad className="text-slate-400" /> {car.year || "N/A"}</span>
-                    <span className="inline-flex items-center gap-1"><FaGasPump className="text-slate-400" /> {car.fuelType || "N/A"}</span>
-                    <span className="inline-flex items-center gap-1"><FaBolt className="text-slate-400" /> {car.transmission || "N/A"}</span>
+                  {/* Specs row */}
+                  <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500 mt-2">
+                    <span className="inline-flex items-center gap-1">
+                      <FaRoad className="text-slate-400" />
+                      {car.year || "N/A"}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <FaGasPump className="text-slate-400" />
+                      {car.fuelType || "N/A"}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <FaBolt className="text-slate-400" />
+                      {car.transmission || "N/A"}
+                    </span>
                   </p>
 
-                  <p className="text-amber-700 font-bold mt-2 text-base sm:text-lg">{formatPrice(car.price)}</p>
+                  {/* Price */}
+                  <p className="text-amber-700 font-bold mt-3 text-lg">
+                    {formatPrice(car.price)}
+                  </p>
 
-                  <p className="text-xs sm:text-sm text-slate-600 mt-1">Mileage: {car.mileage || "N/A"} km</p>
+                  {/* Mileage */}
+                  <p className="text-xs text-slate-500 mt-1">
+                    Mileage: {car.mileage || "N/A"} km
+                  </p>
 
-                  <div className="mt-3 sm:mt-4">
+                  {/* Button — pinned to the bottom via mt-auto */}
+                  <div className="mt-auto pt-4">
                     <Link
                       to="/customer"
-                      className="inline-flex w-full items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition"
+                      className="inline-flex w-full items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition"
                     >
-                      Buy Now
+                      Buy Now <FaArrowRight className="text-xs" />
                     </Link>
                   </div>
                 </div>
@@ -394,10 +466,13 @@ const Home = () => {
         )}
 
         {!loading && !error && visibleCars.length === 0 && (
-          <p className="text-center text-slate-500">No matching cars found. Try another search.</p>
+          <p className="text-center text-slate-500 py-10">
+            No matching cars found. Try another search.
+          </p>
         )}
       </section>
 
+      {/* ───────────────── FOOTER ───────────────── */}
       <footer className="bg-slate-950 text-slate-200 border-t border-slate-800 mt-10">
         <div className="max-w-7xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -409,9 +484,13 @@ const Home = () => {
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">Explore</h4>
+            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">
+              Explore
+            </h4>
             <div className="mt-3 space-y-2 text-sm">
-              <Link to="/customer" className="block hover:text-white transition">Browse Cars</Link>
+              <Link to="/customer" className="block hover:text-white transition">
+                Browse Cars
+              </Link>
               <button
                 type="button"
                 onClick={handleSellCarClick}
@@ -420,28 +499,47 @@ const Home = () => {
                 Sell Your Car
               </button>
               {canOpenAdminPanel && (
-                <Link to="/adminpanel/dashboard" className="block hover:text-white transition">Admin Panel</Link>
+                <Link
+                  to="/adminpanel/dashboard"
+                  className="block hover:text-white transition"
+                >
+                  Admin Panel
+                </Link>
               )}
             </div>
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">Services</h4>
+            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">
+              Services
+            </h4>
             <div className="mt-3 space-y-2 text-sm text-slate-400">
               <a href="/services#servicing" className="block hover:text-white transition">
                 Car Servicing
               </a>
-              <a href="/services#policies" className="block hover:text-white transition">Policies & Terms</a>
+              <a href="/services#policies" className="block hover:text-white transition">
+                Policies &amp; Terms
+              </a>
             </div>
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">Contact Us</h4>
-            <p className="mt-3 text-sm text-slate-400">Need help with listing, booking, or purchases?</p>
-            <a href="/services#contact" className="mt-2 inline-block text-sm text-emerald-400 hover:text-emerald-300 transition">
+            <h4 className="text-sm font-semibold tracking-wide uppercase text-slate-300">
+              Contact Us
+            </h4>
+            <p className="mt-3 text-sm text-slate-400">
+              Need help with listing, booking, or purchases?
+            </p>
+            <a
+              href="/services#contact"
+              className="mt-2 inline-block text-sm text-emerald-400 hover:text-emerald-300 transition"
+            >
               carscout85@gmail.com
             </a>
-            <a href="tel:+918320161950" className="mt-1 block text-sm text-slate-400 hover:text-white transition">
+            <a
+              href="tel:+918320161950"
+              className="mt-1 block text-sm text-slate-400 hover:text-white transition"
+            >
               +91 83201 61950
             </a>
           </div>
@@ -459,7 +557,6 @@ const Home = () => {
         isOpen={isSellWizardOpen}
         onClose={() => setIsSellWizardOpen(false)}
       />
-
     </div>
   );
 };
