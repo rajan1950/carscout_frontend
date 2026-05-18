@@ -211,39 +211,6 @@ export const CarDetailsPage = () => {
     return Math.round(numericPrice / averageMileage);
   }, [averageMileage, numericPrice]);
 
-  const relatedCars = useMemo(() => {
-    if (!car?._id) {
-      return [];
-    }
-
-    const sameBrand = allCars.filter(
-      (item) => item?._id !== car._id && String(item?.brand || "").toLowerCase() === String(car?.brand || "").toLowerCase()
-    );
-
-    const sameFuel = allCars.filter(
-      (item) =>
-        item?._id !== car._id &&
-        String(item?.fuelType || "").toLowerCase() === String(car?.fuelType || "").toLowerCase() &&
-        String(item?.brand || "").toLowerCase() !== String(car?.brand || "").toLowerCase()
-    );
-
-    const merged = [...sameBrand, ...sameFuel];
-    const unique = [];
-    const seen = new Set();
-
-    for (const item of merged) {
-      if (!item?._id || seen.has(item._id)) {
-        continue;
-      }
-      seen.add(item._id);
-      unique.push(item);
-      if (unique.length >= 4) {
-        break;
-      }
-    }
-
-    return unique;
-  }, [allCars, car]);
 
   useEffect(() => {
     const fetchSellersForLegacyCars = async () => {
@@ -657,63 +624,6 @@ export const CarDetailsPage = () => {
         </div>
       </section>
 
-      <section className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-black text-slate-900">Related Cars</h2>
-          <span className="rounded-full bg-slate-100 text-slate-700 px-4 py-1.5 text-sm font-semibold">
-            {relatedCars.length} suggestions
-          </span>
-        </div>
-
-        {relatedCars.length === 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-slate-600">
-            No similar cars found right now.
-          </div>
-        )}
-
-        {relatedCars.length > 0 && (
-          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {relatedCars.map((item) => {
-              const relatedImage = resolveCarImageFromCar(item) || CAR_IMAGE_FALLBACK;
-
-              return (
-                <article key={item._id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-                  <img
-                    src={relatedImage}
-                    alt={`${item.brand || "Car"} ${item.model || ""}`}
-                    className="h-36 w-full object-cover"
-                    onError={(event) => {
-                      event.currentTarget.onerror = null;
-                      event.currentTarget.src = CAR_IMAGE_FALLBACK;
-                    }}
-                  />
-                  <div className="p-3">
-                    <p className="font-black text-slate-900">{item.brand || "Car"} {item.model || "Model"}</p>
-                    <p className="text-xs text-slate-600 mt-1">{item.year || "N/A"} | {item.fuelType || "N/A"}</p>
-                    <p className="text-amber-700 font-black mt-2">{formatPrice(item.price)}</p>
-                    <div className="grid grid-cols-2 gap-2 mt-3">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/customer/car/${item._id}`)}
-                        className="rounded-lg border border-slate-200 text-slate-800 py-2 text-xs font-semibold hover:bg-slate-50"
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/buy/${item._id}`)}
-                        className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white py-2 text-xs font-semibold"
-                      >
-                        Buy
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
     </div>
   );
 };
